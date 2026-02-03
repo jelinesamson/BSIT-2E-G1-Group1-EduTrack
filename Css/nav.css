@@ -26,8 +26,6 @@
   color: #48cae4 !important;
 }
 
-/* ===== MODAL CONTAINER ===== */
-
 .glass-modal {
   background: rgba(197, 197, 198, 0.85); /* light glass */
   backdrop-filter: blur(6px);
@@ -37,7 +35,6 @@
   color: #111827;
 }
 
-/* ===== MODAL HEADER ===== */
 .glass-modal .modal-header {
   border-bottom: none;
   padding: 1rem 1.25rem 0.5rem;
@@ -49,35 +46,30 @@
   color: #111827;
 }
 
-/* ===== MODAL BODY ===== */
 .glass-modal .modal-body {
   padding: 1rem 1.5rem 1.25rem;
 }
 
-/* ===== FORM LABELS ===== */
 .glass-modal .form-label {
   font-size: 0.85rem;
   color: #363636;
   margin-bottom: 0.25rem;
 }
 
-/* ===== INPUTS (FIXED PLACEHOLDER ISSUE) ===== */
 .glass-modal .form-control {
   background: rgba(255, 255, 255, 0.75);
   border: 1px solid rgba(0, 0, 0, 0.25);
   border-radius: 8px;
-  color: #1f2937; /* DARK TEXT */
+  color: #1f2937;
   padding: 8px 12px;
   font-size: 0.9rem;
 }
 
-/* PLACEHOLDER — FORCE VISIBLE */
 .glass-modal .form-control::placeholder {
   color: #6b7280 !important;
   opacity: 1 !important;
 }
 
-/* Browser fallback */
 .glass-modal .form-control::-webkit-input-placeholder {
   color: #6b7280;
 }
@@ -85,7 +77,6 @@
   color: #6b7280;
 }
 
-/* INPUT FOCUS */
 .glass-modal .form-control:focus {
   background: rgba(255, 255, 255, 0.9);
   border-color: #444444;
@@ -93,7 +84,6 @@
   color: #111827;
 }
 
-/* ===== BUTTON ===== */
 .glass-modal .btn-success {
   border-radius: 8px;
   font-weight: 600;
@@ -103,7 +93,6 @@
   filter: brightness(1.05);
 }
 
-/* ===== CLOSE BUTTON ===== */
 .glass-modal .btn-close {
   filter: invert(1);
   opacity: 0.7;
@@ -113,7 +102,6 @@
   opacity: 1;
 }
 
-/* ===== LINKS ===== */
 .glass-modal a {
   text-decoration: none;
 }
@@ -122,7 +110,6 @@
   text-decoration: underline;
 }
 
-/* ===== SMALL TEXT ===== */
 .glass-modal .small {
   font-size: 0.8rem;
   color: #2a2b2c;
