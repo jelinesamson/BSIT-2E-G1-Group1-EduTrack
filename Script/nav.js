@@ -93,3 +93,13 @@ window.addEventListener("load", () => {
 window.addEventListener("load", () => {
   document.body.classList.add("page-loaded");
 });
+
+document.querySelectorAll(".contact-card").forEach((card) => {
+  card.addEventListener("mouseenter", function () {
+    this.style.transform = "translateY(-5px)";
+  });
+
+  card.addEventListener("mouseleave", function () {
+    this.style.transform = "translateY(0)";
+  });
+});
