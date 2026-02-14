@@ -1,17 +1,3 @@
-fetch("nav.html")
-  .then((response) => response.text())
-  .then((data) => {
-    document.getElementById("navbar-placeholder").innerHTML = data;
-
-    const current = location.pathname;
-    const links = document.querySelectorAll(".nav-link");
-
-    links.forEach((link) => {
-      if (current.includes(link.getAttribute("href"))) {
-        link.classList.add("active");
-      }
-    });
-  });
 function validateLogin() {
   const email = document.getElementById("loginEmail").value.trim();
   const emailerr = document.getElementById("loginEmailErr");
