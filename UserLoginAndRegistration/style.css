@@ -1,0 +1,331 @@
+/*------------------------------- LOGO -------------------------------*/
+
+.logo-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.logo {
+  width: 60px;
+  height: auto;
+}
+
+.school-name h1 {
+  margin: 0;
+  font-size: 22px;
+  font-family: Georgia, serif;
+  font-weight: bold;
+  color: #800000;
+}
+
+.school-name p {
+  margin: 0;
+  font-size: 16px;
+  color: gray;
+}
+
+/*------------------------------- LOG IN -------------------------------*/
+
+/* Basic reset */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family:
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+  background-color: #f5f5f5;
+  color: #222;
+  min-height: 100vh;
+}
+
+/* Main layout */
+.main-container {
+  display: flex;
+  height: 100vh;
+}
+
+/* Left image side */
+.image-side {
+  flex: 1.2;
+  overflow: hidden;
+}
+
+.image-side img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Right form side */
+.form-side {
+  flex: 1;
+  padding: 5px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: #ffffff;
+}
+
+.form-card {
+  width: 100%;
+  max-width: 360px;
+  padding: 40px 32px;
+}
+
+/* Typography */
+h1 {
+  text-align: center;
+  font-size: 28px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.subtitle {
+  font-size: 14px;
+  color: #777;
+  margin-bottom: 24px;
+}
+
+/* Form styles */
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+label {
+  font-size: 13px;
+  color: #333;
+  margin-bottom: 4px;
+}
+
+input[type="email"],
+input[type="password"] {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  font-size: 14px;
+  outline: none;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+
+input[type="email"]:focus,
+input[type="password"]:focus {
+  border-color: #444;
+  box-shadow: 0 0 0 1px #44411a11;
+}
+
+input[type="password"],
+input[type="text"] {
+  box-shadow: 0 0 0 1px #44411a11;
+  border-radius: 6px;
+  padding: 10px 40px 10px 12px;
+  width: 100%;
+  font-size: 14px;
+}
+/* Hide browser default password toggle */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear,
+input[type="password"]::-webkit-credentials-auto-fill-button {
+  display: none !important;
+}
+
+/* Eye icon */
+.toggleEye {
+  cursor: pointer;
+  position: absolute;
+  right: 10px;
+  top: 40%;
+  transform: translateY(-50%);
+  user-select: none;
+  color: #555;
+  width: 18px;
+  height: 18px;
+}
+
+/* Row with Remember me + Forgot link */
+.form-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 4px;
+  margin-bottom: 8px;
+}
+
+.checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #555;
+}
+
+.checkbox input {
+  width: 14px;
+  height: 14px;
+}
+
+.forgot {
+  font-size: 13px;
+  color: #777;
+  text-decoration: none;
+}
+
+.forgot:hover {
+  text-decoration: underline;
+}
+
+/* Button */
+.btn {
+  width: 100%;
+  margin-top: 4px;
+  padding: 10px 0;
+  border-radius: 24px;
+  border: none;
+  background-color: #4f4b45;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background-color 0.2s,
+    transform 0.05s;
+}
+
+.btn:hover {
+  background-color: #3f3a34;
+}
+
+.btn:active {
+  transform: translateY(1px);
+}
+
+/* Bottom Sign-up text */
+.signup {
+  margin-top: 18px;
+  font-size: 13px;
+  color: #777;
+}
+
+.signup a {
+  color: #333;
+  font-weight: 500;
+  text-decoration: none;
+  margin-left: 4px;
+}
+
+.signup a:hover {
+  text-decoration: underline;
+}
+
+/* Responsive: stack on small screens */
+@media (max-width: 600px) {
+  body {
+    background: url("Background.jpeg") no-repeat center center/cover;
+    position: relative;
+  }
+
+  /* dark overlay for better readability */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.35);
+    z-index: 0;
+  }
+
+  .image-side {
+    display: none;
+  }
+
+  .form-side {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: transparent;
+    position: relative;
+    z-index: 1;
+  }
+
+  .form-card {
+    width: 90%;
+    max-width: 340px;
+    padding: 28px 20px;
+    margin: 20px;
+
+    background: rgba(255, 255, 255, 0.527);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+
+    color: #fff;
+  }
+
+  /* text colors */
+
+  .school-name p {
+    font-size: 16px;
+  }
+  .school-name p,
+  .form-title,
+  .form-card label,
+  .form-card p,
+  .form-card a {
+    color: #fff;
+  }
+
+  .subtitle {
+    color: rgba(255, 255, 255, 0.8);
+  }
+
+  /* inputs */
+  input[type="email"],
+  input[type="password"] {
+    background: rgba(122, 49, 49, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: #fff;
+  }
+
+  input::placeholder {
+    color: rgba(255, 255, 255, 0.7);
+  }
+
+  /* button */
+  .btn {
+    background: rgba(0, 0, 0, 0.4);
+  }
+
+  .btn:hover {
+    background: rgba(0, 0, 0, 0.6);
+  }
+
+  input[type="password"],
+  input[type="text"] {
+    background: rgba(122, 49, 49, 0.2);
+    box-shadow: 0 0 0 1px #44411a11;
+    border-radius: 6px;
+    padding: 10px 40px 10px 12px;
+    width: 100%;
+    font-size: 14px;
+  }
+}
