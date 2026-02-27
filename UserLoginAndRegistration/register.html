@@ -45,7 +45,41 @@
               <input type="email" id="email" placeholder="example@email.com" />
               <small class="error"></small>
             </div>
+<div class="input-group">
+              <label>Password <span>*</span></label>
+              <div class="password-field">
+                <input
+                  type="password"
+                  id="password"
+                  placeholder="Create password"
+                />
+                <span class="toggle-btn" data-target="password">Show</span>
+              </div>
+              <small class="error"></small>
+            </div>
 
+            <div class="input-group">
+              <label>Confirm Password <span>*</span></label>
+              <div class="password-field">
+                <input
+                  type="password"
+                  id="confirmPassword"
+                  placeholder="Re-enter password"
+                />
+                <span class="toggle-btn" data-target="confirmPassword"
+                  >Show</span
+                >
+              </div>
+              <small class="error"></small>
+            </div>
+
+            <button type="submit" id="registerBtn" disabled>
+              Register Account
+            </button>
+
+            <div class="login-link">
+              Already registered? <a href="index.html">Login here</a>
+            </div>
             </form>
 
 	        </div>
