@@ -29,17 +29,26 @@
             <p>Bulacan State University</p>
           </div>
         </div>
-
-        <!-- here yung form -->
-
+        
         <h1 class="form-title fw-bold">Register</h1>
 
-        <div class="form-card">
-          <p class="login">
-            Already have an account?
-            <a href="index.html">Sign up</a>
-          </p>
-        </div>
+       <div class="form-card">
+          <form id="registerForm" novalidate>
+            <div class="input-group">
+              <label>Full Name <span>*</span></label>
+              <input type="text" id="fullName" placeholder="Juan Dela Cruz" />
+              <small class="error"></small>
+            </div>
+
+            <div class="input-group">
+              <label>Email Address <span>*</span></label>
+              <input type="email" id="email" placeholder="example@email.com" />
+              <small class="error"></small>
+            </div>
+
+            </form>
+
+	        </div>
       </div>
     </div>
 
