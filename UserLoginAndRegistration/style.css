@@ -140,6 +140,7 @@ input[type="text"] {
   width: 100%;
   font-size: 14px;
 }
+
 /* Hide browser default password toggle */
 input[type="password"]::-ms-reveal,
 input[type="password"]::-ms-clear,
@@ -286,6 +287,7 @@ input[type="password"]::-webkit-credentials-auto-fill-button {
   .school-name p {
     font-size: 16px;
   }
+
   .school-name p,
   .form-title,
   .form-card label,
@@ -328,4 +330,87 @@ input[type="password"]::-webkit-credentials-auto-fill-button {
     width: 100%;
     font-size: 14px;
   }
+}
+
+/*------------------------------- REGISTER -------------------------------*/
+.input-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 16px;
+}
+
+label {
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+
+input {
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: 0.2s;
+}
+
+input.error-border {
+  border-color: red;
+}
+
+input.success-border {
+  border-color: green;
+}
+
+/* ERROR TEXT */
+.error {
+  color: red;
+  font-size: 12px;
+  margin-top: 3px;
+  display: block;
+}
+
+/* SUCCESS MESSAGE */
+.success-msg {
+  text-align: center;
+  font-size: 13px;
+  color: green;
+  margin-top: 10px;
+}
+
+/* BUTTON */
+button {
+  width: 100%;
+  padding: 10px 0;
+  border: none;
+  border-radius: 24px;
+  background-color: #4f4b45;
+  color: #fff;
+  font-weight: 500;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+button:enabled {
+  cursor: pointer;
+  opacity: 1;
+}
+
+button:enabled:hover {
+  background: #3f3a34;
+}
+
+/* PASSWORD TOGGLE */
+.toggleEye {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  font-weight: bold;
+  color: #555;
+}
+
+.password-field {
+  position: relative;
+  display: flex;
+  align-items: center;
 }
