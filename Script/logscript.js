@@ -8,7 +8,7 @@ const passwordError = document.getElementById("passwordError");
 const loginError = document.getElementById("loginError");
 
 const form = document.getElementById("loginForm");
-const togglePassword = document.getElementById("togglePassword");
+const togglePassword = document.getElementById("toggleLoginPassword");
 
 // FAKE CREDENTIALS (for testing)
 const validEmail = "admin@gmail.com";

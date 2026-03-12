@@ -114,3 +114,50 @@
   font-size: 0.8rem;
   color: #2a2b2c;
 }
+
+/* Hide browser default password toggle */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear,
+input[type="password"]::-webkit-credentials-auto-fill-button {
+  display: none !important;
+}
+
+/* Eye icon */
+.input-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.input-wrapper input {
+  padding-right: 40px; /* space for the eye icon */
+}
+
+.input-wrapper .toggleEye {
+  position: absolute;
+  top: 70%;
+  right: 10px; /* distance from the right edge */
+  transform: translateY(-50%);
+  cursor: pointer;
+  user-select: none;
+  color: #555;
+}
+
+.btnlog {
+  width: 100%;
+  margin-top: 4px;
+  padding: 10px 0;
+  border-radius: 24px;
+  border: none;
+  background-color: #4f4b45;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background-color 0.2s,
+    transform 0.05s;
+}
+
+.btnlog:hover {
+  background-color: #3f3a34;
+}
