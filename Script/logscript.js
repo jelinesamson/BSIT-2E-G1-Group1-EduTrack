@@ -69,6 +69,7 @@ form.addEventListener("submit", (e) => {
       alert("Login successful!");
       form.reset();
       loginBtn.disabled = true;
+      window.location.href = "/BSIT-2E-G1-Group1-EduTrack/Html/dashboard.php";
     } else {
       loginError.textContent = "Invalid email or password";
     }
