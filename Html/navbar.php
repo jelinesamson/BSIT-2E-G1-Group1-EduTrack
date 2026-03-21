@@ -172,7 +172,7 @@
 
         <form id="registerForm" novalidate>  
           <div class="modal-body">
-            <label class="form-label fw-bold">First Name</label>
+            <label class="form-label fw-bold">Full Name</label>
             <input
               type="text"
               class="form-control mt-1"
@@ -216,7 +216,7 @@
             <br />
 
             <div class="input-wrapper">
-              <label class="form-label fw-bold">Password</label>
+              <label class="form-label fw-bold">Confirm Password</label>
               <input
                 type="password"
                 class="form-control mt-1"

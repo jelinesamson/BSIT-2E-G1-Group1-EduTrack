@@ -1,3 +1,5 @@
+
+
 <!doctype html>
 <html lang="en">
   <head>
@@ -6,6 +8,7 @@
 
     <title>EduTrack Dashboard</title>
 
+    <link rel="stylesheet" href="../Css/systemNav.css" />
     <link rel="stylesheet" href="../Css/dashboard.css" />
 
     <link
@@ -13,61 +16,14 @@
       rel="stylesheet"
     />
 
-    <script src="https://unpkg.com/lucide@latest"></script>
+
   </head>
 
   <body>
-    <div class="dashboard-container">
+    <div class="systemNav-container">
       <!-- SIDEBAR -->
 
-      <nav class="sidebar" id="sidebar">
-        <div class="profile">
-          <img
-            src="https://imgcdn.stablediffusionweb.com/2024/9/27/bc8687ab-dd73-432d-b99c-956f74fd0f9a.jpg"
-          />
-
-          <h3>EduTrack</h3>
-          <p>Admin</p>
-        </div>
-
-        <ul class="nav-links">
-          <li class="active">
-            <!-- <a href="#"></a> -->
-            <i data-lucide="layout-dashboard"></i>
-            Dashboard
-          </li>
-
-          <li>
-            <!-- <a href="#"></a> -->
-            <i data-lucide="package"></i>
-            Product Management
-          </li>
-
-          <li>
-            <!-- <a href="#"></a> -->
-            <i data-lucide="warehouse"></i>
-            Inventory Management
-          </li>
-
-          <li>
-            <!-- <a href="#"></a> -->
-            <i data-lucide="shopping-cart"></i>
-            Sales Management
-          </li>
-
-          <li>
-            <!-- <a href="#"></a> -->
-            <i data-lucide="bar-chart-3"></i>
-            Sales Report
-          </li>
-        </ul>
-
-        <div class="logout">
-          <!-- <a href="#"></a> -->
-          <i data-lucide="log-out"></i>
-          Logout
-        </div>
-      </nav>
+    <?php include("systemNav.php"); ?>
 
       <!-- MAIN -->
 
@@ -79,7 +35,6 @@
 
           <h2>Welcome to EduTrack!</h2>
 
-          
         </header>
 
         <section class="dashboard-body">
@@ -101,7 +56,9 @@
         </section>
       </main>
     </div>
+      <script src="https://unpkg.com/lucide@latest"></script>
 
-    <script src="../Script/dashboard.js"></script>
+      <script src="../Script/systemNav.js"></script>
+      <script src="../Script/dashboard.js"></script>
   </body>
 </html>

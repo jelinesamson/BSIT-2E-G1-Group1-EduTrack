@@ -1,77 +1,98 @@
 // LOGIN PAGE ELEMENTS
-const email = document.getElementById("email");
-const password = document.getElementById("password");
-const loginBtn = document.getElementById("loginBtn");
+let apiLog = "/BSIT-2E-G1-Group1-EduTrack/Api/login.php";
+let email = $("#email");
+let password = $("#password");
+let loginBtn = $("#loginBtn");
 
-const emailError = document.getElementById("emailError");
-const passwordError = document.getElementById("passwordError");
-const loginError = document.getElementById("loginError");
+let emailError = $("#emailError");
+let passwordError = $("#passwordError");
+let loginError = $("#loginError");
 
-const form = document.getElementById("loginForm");
-const togglePassword = document.getElementById("toggleLoginPassword");
+let form = $("#loginForm");
+let togglePassword = $("#toggleLoginPassword");
 
-// FAKE CREDENTIALS (for testing)
-const validEmail = "admin@gmail.com";
-const validPassword = "Admin123";
+function postOne() {
+  let payload = {
+    email: email.val(),
+    password: password.val(),
+  };
+
+  $.ajax({
+    url: apiLog,
+    type: "POST",
+    data: "action=postOne&payload=" + JSON.stringify(payload),
+    dataType: "json",
+    success: function (response) {
+      alert(response.message);
+      if (response.status == "success") {
+        window.location.href =
+          " /BSIT-2E-G1-Group1-EduTrack/Html/dashboard.php";
+      }
+    },
+    error: function (error) {
+      alert(error.message);
+    },
+  });
+}
 
 // VALIDATION FUNCTIONS
 function validateEmail() {
   const pattern = /^\S+@\S+\.\S+$/;
-  if (email.value.trim() === "") {
-    emailError.textContent = "Email is required";
+  if (email.val().trim() === "") {
+    emailError.text("Email is required");
     return false;
-  } else if (!pattern.test(email.value.trim())) {
-    emailError.textContent = "Invalid email format";
+  } else if (!pattern.test(email.val().trim())) {
+    emailError.text("Invalid email format");
     return false;
   } else {
-    emailError.textContent = "";
+    emailError.text("");
     return true;
   }
 }
 
 function validatePassword() {
-  if (password.value.trim() === "") {
-    passwordError.textContent = "Password is required";
+  if (password.val().trim() === "") {
+    passwordError.text("Password is required");
     return false;
   } else {
-    passwordError.textContent = "";
+    passwordError.text("");
     return true;
   }
 }
 
 // ENABLE BUTTON
 function checkForm() {
-  loginError.textContent = ""; // clear general error
+  loginError.text(""); // clear general error
   if (validateEmail() && validatePassword()) {
-    loginBtn.disabled = false;
+    loginBtn.prop("disabled", false);
   } else {
-    loginBtn.disabled = true;
+    loginBtn.prop("disabled", true);
   }
 }
 
 // EVENTS
-email.addEventListener("blur", validateEmail);
-password.addEventListener("blur", validatePassword);
+email.on("blur", validateEmail);
+password.on("blur", validatePassword);
 
-email.addEventListener("input", checkForm);
-password.addEventListener("input", checkForm);
+email.on("input", checkForm);
+password.on("input", checkForm);
 
 // SHOW/HIDE PASSWORD
-togglePassword.addEventListener("click", () => {
-  password.type = password.type === "password" ? "text" : "password";
+togglePassword.on("click", function () {
+  password.attr(
+    "type",
+    password.attr("type") === "password" ? "text" : "password",
+  );
 });
 
 // FORM SUBMIT
-form.addEventListener("submit", (e) => {
+form.on("submit", function (e) {
   e.preventDefault();
   if (validateEmail() && validatePassword()) {
-    if (email.value === validEmail && password.value === validPassword) {
-      alert("Login successful!");
-      form.reset();
-      loginBtn.disabled = true;
-      window.location.href = "/BSIT-2E-G1-Group1-EduTrack/Html/dashboard.php";
-    } else {
-      loginError.textContent = "Invalid email or password";
+    if (email.val() != "" && password.val() != "") {
+      postOne();
+      form[0].reset();
+      loginBtn.prop("disabled", true);
     }
   }
 });

@@ -1,8 +1,3 @@
-const menuBtn = document.getElementById("menuBtn");
-const sidebar = document.getElementById("sidebar");
-
-menuBtn.addEventListener("click", () => {
-  sidebar.classList.toggle("active");
+document.addEventListener("DOMContentLoaded", () => {
+  console.log("Dashboard loaded!");
 });
-
-lucide.createIcons();
