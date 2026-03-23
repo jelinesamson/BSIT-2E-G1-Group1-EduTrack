@@ -78,6 +78,24 @@ body {
   cursor: pointer;
 }
 
+.hamburger {
+  display: none;
+  position: fixed; /* para palaging visible sa top-left */
+  top: 20px;
+  left: 20px;
+  z-index: 1100; /* above sidebar */
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+@media (max-width: 900px) {
+  .hamburger {
+    display: block;
+  }
+}
+
 /* RESPONSIVE SIDEBAR */
 @media (max-width: 900px) {
   .sidebar {

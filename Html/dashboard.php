@@ -41,10 +41,31 @@
           <h3>Overview</h3>
 
           <div class="stats-grid">
-            <div class="card"></div>
-            <div class="card"></div>
-            <div class="card"></div>
-            <div class="card"></div>
+
+            <div class="card card-blue">
+              <div class="dashLabel">Total Sales Today</div>
+              <div class="dashValue" id="totalSales">₱600</div>
+              <div class="dashSub neu" id="salesSub">today</div>
+            </div>
+
+            <div class="card card-green">
+              <div class="dashLabel">Total Solds Today</div>
+              <div class="dashValue" id="totalSolds">10</div>
+              <div class="dashSub neu" id="soldsSub">today</div>
+            </div>
+
+            <div class="card card-orange">
+              <div class="dashLabel">Total Products</div>
+              <div class="dashValue" id="totalProducts"></div>
+              <div class="dashSub neu" id="productsSub">in stock</div>
+            </div>
+
+            <div class="card card-teal">
+              <div class="dashLabel">Transactions Today</div>
+              <div class="dashValue" id="totalTransactions">2</div>
+              <div class="dashSub neu" id="transactionsSub">today</div>
+            </div>
+
           </div>
 
           <div class="empty">

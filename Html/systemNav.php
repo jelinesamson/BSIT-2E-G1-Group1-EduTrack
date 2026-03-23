@@ -1,3 +1,6 @@
+
+
+
         <nav class="sidebar" id="sidebar">
         <div class="profile">
             <img src="https://imgcdn.stablediffusionweb.com/2024/9/27/bc8687ab-dd73-432d-b99c-956f74fd0f9a.jpg"/>
@@ -24,16 +27,21 @@
                 <a href="../Html/inventoryManagement.php">
                     <i data-lucide="warehouse"></i>
                     Inventory Management
-                    </li>
                 </a>
+            </li>
+
             <li class="<?= basename($_SERVER['PHP_SELF']) == 'salesManagement.php' ? 'active' : '' ?>">
-            <i data-lucide="shopping-cart"></i>
-            Sales Management
+                <a href="../Html/salesManagement.php">
+                    <i data-lucide="shopping-cart"></i>
+                    Sales Management
+                </a>
             </li>
 
             <li class="<?= basename($_SERVER['PHP_SELF']) == 'salesReport.php' ? 'active' : '' ?>">
-            <i data-lucide="bar-chart-3"></i>
-            Sales Report
+                <a href="../Html/salesReport.php">
+                    <i data-lucide="bar-chart-3"></i>
+                    Sales Report
+                </a>
             </li>
         </ul>
 
