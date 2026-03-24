@@ -1,9 +1,9 @@
 <?php
-$PRODUCTS_FILE     = _DIR_ . '/../data/products.json';
-$SALES_FILE        = _DIR_ . '/../data/sales.json';
-$TRANSACTIONS_FILE = _DIR_ . '/../data/transactions.json';
+$PRODUCTS_FILE     = __DIR__ . '/../data/products.json';
+$SALES_FILE        = __DIR__ . '/../data/sales.json';
+$TRANSACTIONS_FILE = __DIR__ . '/../data/transactions.json';
 
-if (!is_dir(_DIR_ . '/../data')) mkdir(_DIR_ . '/../data', 0755, true);
+if (!is_dir(__DIR__ . '/../data')) mkdir(__DIR__ . '/../data', 0755, true);
 
 $defaultProducts = [
     ["id" => 1,  "name" => "Uniform",    "price" => 300, "stock" => 50],
