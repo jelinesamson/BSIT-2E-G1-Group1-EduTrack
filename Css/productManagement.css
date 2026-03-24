@@ -145,8 +145,8 @@ td {
 }
 .dt-button-collection {
   position: absolute !important;
-  left: 50% !important; /* center horizontally */
-  transform: translateX(-50%) !important; /* shift back by half width */
+  left: 50% !important; 
+  transform: translateX(-50%) !important;
   min-width: 150px;
   padding: 5px 0;
   background-color: white;
