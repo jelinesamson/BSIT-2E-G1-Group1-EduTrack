@@ -1,238 +1,162 @@
-let products = [];
-let cart     = [];
-let rowId    = 1;
+let currentProducts = [];
+let cart = [];
+let currentReceiptData = null;
 
-document.addEventListener('DOMContentLoaded', () => {
-  lucide.createIcons();
+$(document).ready(function () {
   loadProducts();
-  startClock();
 });
 
-function startClock() {
-  const el = document.getElementById('liveClock');
-  const tick = () => {
-    const n = new Date();
-    el.textContent = n.toLocaleDateString('en-PH', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })
-      + '  ' + n.toLocaleTimeString('en-PH');
-  };
-  tick();
-  setInterval(tick, 1000);
+function loadProducts() {
+  $.ajax({
+    url: '../Api/salesManagement.php?api=products',
+    type: 'GET',
+    success: function (response) {
+      currentProducts = response;
+      renderProducts(currentProducts);
+    },
+    error: function () { console.error("Failed to fetch products."); }
+  });
 }
 
-async function loadProducts() {
-  try {
-    const res = await fetch('sales_management.php?api=products');
-    products  = await res.json();
-    const sel = document.getElementById('selProduct');
-    products.forEach(p => {
-      const opt         = document.createElement('option');
-      opt.value         = p.id;
-      opt.textContent   = p.name;
-      opt.dataset.price = p.price;
-      opt.dataset.stock = p.stock;
-      sel.appendChild(opt);
-    });
-  } catch (e) {
-    showToast('error', 'Failed to load products.');
-  }
+function renderProducts(products) {
+  const grid = $('#productGrid');
+  grid.empty();
+  if (products.length === 0) { grid.html('<p>No products available.</p>'); return; }
+
+  products.forEach(p => {
+    let card = `
+            <div class="product-card" onclick="addToCart(${p.id}, '${p.name}', ${p.price}, ${p.stock})">
+                <h4>${p.name}</h4>
+                <div class="price">₱${parseFloat(p.price).toFixed(2)}</div>
+                <div class="stock">Stock: ${p.stock}</div>
+            </div>`;
+    grid.append(card);
+  });
 }
 
-function onProductChange() {
-  const sel = document.getElementById('selProduct');
-  const opt = sel.options[sel.selectedIndex];
-  if (!opt.value) {
-    document.getElementById('inpPrice').value  = '';
-    document.getElementById('stockInfo').textContent = '';
-    return;
-  }
-  document.getElementById('inpPrice').value = parseFloat(opt.dataset.price).toFixed(2);
-  const stock = parseInt(opt.dataset.stock);
-  const info  = document.getElementById('stockInfo');
-  info.textContent  = 'Available stock: ' + stock + ' unit(s)';
-  info.style.color  = stock < 5 ? '#dc3545' : '#64748b';
+function filterProducts() {
+  let term = $('#productSearch').val().toLowerCase();
+  let filtered = currentProducts.filter(p => p.name.toLowerCase().includes(term));
+  renderProducts(filtered);
 }
 
-function addToCart() {
-  const sel   = document.getElementById('selProduct');
-  const opt   = sel.options[sel.selectedIndex];
-  const pid   = parseInt(opt.value || 0);
-  const qty   = parseInt(document.getElementById('inpQty').value || 0);
-  const price = parseFloat(document.getElementById('inpPrice').value || 0);
-
-  if (!pid || qty < 1 || !price) {
-    showToast('error', 'Please select a product and enter a valid quantity.');
-    return;
-  }
-
-  const product  = products.find(p => p.id === pid);
-  const existing = cart.find(i => i.pid === pid);
-
-  if (existing) {
-    const newQty = existing.qty + qty;
-    if (newQty > product.stock) { showToast('error', 'Only ' + product.stock + ' unit(s) available.'); return; }
-    existing.qty   = newQty;
-    existing.total = existing.qty * existing.price;
+function addToCart(id, name, price, maxStock) {
+  let existingItem = cart.find(item => item.product_id === id);
+  if (existingItem) {
+    if (existingItem.qty < maxStock) existingItem.qty++;
+    else alert(`Only ${maxStock} in stock.`);
   } else {
-    if (qty > product.stock) { showToast('error', 'Only ' + product.stock + ' unit(s) in stock.'); return; }
-    cart.push({ _id: rowId++, pid, name: product.name, qty, price, total: qty * price, stock: product.stock });
+    cart.push({ product_id: id, name: name, price: price, qty: 1, maxStock: maxStock });
   }
-
-  renderCart();
-  sel.value = '';
-  document.getElementById('inpPrice').value  = '';
-  document.getElementById('inpQty').value    = 1;
-  document.getElementById('stockInfo').textContent = '';
-  showToast('success', product.name + ' added to cart.');
-}
-
-function changeQty(id, delta) {
-  const item = cart.find(i => i._id === id);
-  if (!item) return;
-  const newQty = item.qty + delta;
-  if (newQty < 1) { removeItem(id); return; }
-  if (newQty > item.stock) { showToast('error', 'Max stock: ' + item.stock); return; }
-  item.qty   = newQty;
-  item.total = item.qty * item.price;
   renderCart();
 }
 
-function removeItem(id) {
-  cart = cart.filter(i => i._id !== id);
-  renderCart();
+function updateQty(id, newQty) {
+  let item = cart.find(i => i.product_id === id);
+  if (item) {
+    let qty = parseInt(newQty);
+    if (isNaN(qty) || qty <= 0) { removeFromCart(id); return; }
+    if (qty > item.maxStock) {
+      alert(`Max available is ${item.maxStock}.`);
+      item.qty = item.maxStock;
+    } else { item.qty = qty; }
+    renderCart();
+  }
 }
 
-function clearCart() {
-  if (!cart.length) return;
-  cart = [];
+function removeFromCart(id) {
+  cart = cart.filter(item => item.product_id !== id);
   renderCart();
-  showToast('success', 'Cart cleared.');
 }
 
 function renderCart() {
-  const tbody = document.getElementById('cartBody');
-  tbody.innerHTML = '';
+  const tbody = $('#cartBody');
+  tbody.empty();
+  let total = 0;
 
-  if (!cart.length) {
-    tbody.innerHTML = '<tr><td colspan="6" class="empty-cell">Cart is empty. Add items above.</td></tr>';
-    updateSummary();
+  cart.forEach(item => {
+    let subtotal = item.price * item.qty;
+    total += subtotal;
+    let row = `
+            <tr>
+                <td>${item.name}<br><small>₱${parseFloat(item.price).toFixed(2)}</small></td>
+                <td><input type="number" class="cart-qty-input" value="${item.qty}" onchange="updateQty(${item.product_id}, this.value)"></td>
+                <td>₱${subtotal.toFixed(2)}</td>
+                <td><button class="remove-btn" onclick="removeFromCart(${item.product_id})">X</button></td>
+            </tr>`;
+    tbody.append(row);
+  });
+
+  $('#cartTotal').text('₱' + total.toFixed(2));
+  $('#cartTotal').data('raw-total', total);
+}
+
+function processCheckout() {
+  if (cart.length === 0) { alert("Cart is empty."); return; }
+
+  let rawTotal = parseFloat($('#cartTotal').data('raw-total'));
+  let amountPaid = parseFloat($('#amountPaid').val());
+
+  if (isNaN(amountPaid) || amountPaid < rawTotal) {
+    alert(`Insufficient payment! Due: ₱${rawTotal.toFixed(2)}`);
     return;
   }
 
-  cart.forEach((item, idx) => {
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td class="tbl-id">${String(idx + 1).padStart(3, '0')}</td>
-      <td style="font-weight:600">${item.name}</td>
-      <td>
-        <div class="qty-ctrl">
-          <button class="qty-btn" onclick="changeQty(${item._id}, -1)">−</button>
-          <span style="min-width:22px;text-align:center;font-weight:600">${item.qty}</span>
-          <button class="qty-btn" onclick="changeQty(${item._id}, 1)">+</button>
-        </div>
-      </td>
-      <td>₱${item.price.toFixed(2)}</td>
-      <td style="font-weight:700;color:var(--blue)">₱${item.total.toFixed(2)}</td>
-      <td><button class="sm-btn danger sm" onclick="removeItem(${item._id})">✕</button></td>`;
-    tbody.appendChild(tr);
+  $.ajax({
+    url: '../Api/salesManagement.php?api=checkout',
+    type: 'POST',
+    contentType: 'application/json',
+    data: JSON.stringify({ cart: cart, paid: amountPaid }),
+    success: function (response) {
+      if (response.success) {
+        showReceipt(response.receipt);
+        cart = [];
+        $('#amountPaid').val('');
+        renderCart();
+        loadProducts();
+      } else { alert("Checkout Failed: " + response.error); }
+    },
+    error: function () { alert("Server error during checkout."); }
   });
-
-  updateSummary();
 }
 
-function updateSummary() {
-  const total = cart.reduce((s, i) => s + i.total, 0);
-  const units = cart.reduce((s, i) => s + i.qty,   0);
-  document.getElementById('summaryTotal').textContent = '₱' + total.toFixed(2);
-  document.getElementById('summaryItems').textContent = cart.length;
-  document.getElementById('summaryUnits').textContent = units;
-  document.getElementById('cartCount').textContent    = cart.length;
-  computeChange();
-}
-
-function computeChange() {
-  const total = cart.reduce((s, i) => s + i.total, 0);
-  const cash  = parseFloat(document.getElementById('inpCash').value) || 0;
-  const box   = document.getElementById('changeBox');
-  if (cash > 0 && cash >= total) {
-    document.getElementById('summaryChange').textContent = '₱' + (cash - total).toFixed(2);
-    box.classList.add('show');
-  } else {
-    box.classList.remove('show');
-  }
-}
-
-async function checkout() {
-  if (!cart.length) { showToast('error', 'Cart is empty.'); return; }
-
-  const cash  = parseFloat(document.getElementById('inpCash').value) || 0;
-  const total = cart.reduce((s, i) => s + i.total, 0);
-
-  if (cash <= 0)    { showToast('error', 'Please enter the cash amount.'); return; }
-  if (cash < total) { showToast('error', 'Insufficient amount. Need ₱' + total.toFixed(2)); return; }
-
-  const payload = {
-    cart: cart.map(i => ({ product_id: i.pid, name: i.name, qty: i.qty, price: i.price })),
-    paid: cash,
-  };
-
-  try {
-    const res  = await fetch('sales_management.php?api=checkout', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
-    const data = await res.json();
-
-    if (data.error) { showToast('error', data.error); return; }
-
-    showReceipt(data.receipt);
-    cart = [];
-    renderCart();
-    document.getElementById('inpCash').value = '';
-    document.getElementById('changeBox').classList.remove('show');
-
-    const updated = await fetch('sales_management.php?api=products');
-    products = await updated.json();
-
-  } catch (e) {
-    showToast('error', 'Checkout failed. Please try again.');
-  }
-}
-
+// receipt and export logic
 function showReceipt(receipt) {
-  document.getElementById('receiptTxnId').textContent  = receipt.id;
-  document.getElementById('receiptDate').textContent   = new Date(receipt.date).toLocaleString('en-PH');
-  document.getElementById('receiptTotal').textContent  = '₱' + parseFloat(receipt.total).toFixed(2);
-  document.getElementById('receiptPaid').textContent   = '₱' + parseFloat(receipt.paid).toFixed(2);
-  document.getElementById('receiptChange').textContent = '₱' + parseFloat(receipt.change).toFixed(2);
+  currentReceiptData = receipt;
+  $('#rTxnId').text(receipt.id);
+  $('#rDate').text(receipt.date);
 
-  const container = document.getElementById('receiptItems');
-  container.innerHTML = '';
+  let itemsHtml = '';
   receipt.items.forEach(item => {
-    const div = document.createElement('div');
-    div.className = 'r-item';
-    div.innerHTML = `
-      <span>${item.name}</span>
-      <span>${item.qty}</span>
-      <span>₱${parseFloat(item.price).toFixed(2)}</span>
-      <span>₱${(item.qty * item.price).toFixed(2)}</span>`;
-    container.appendChild(div);
+    let subtotal = item.price * item.qty;
+    itemsHtml += `<tr><td>${item.name}<br><small>${item.qty} x ₱${parseFloat(item.price).toFixed(2)}</small></td><td style="text-align: right;">₱${subtotal.toFixed(2)}</td></tr>`;
   });
 
-  document.getElementById('receiptModal').classList.add('open');
-  lucide.createIcons();
+  $('#rItems').html(itemsHtml);
+  $('#rTotal').text(parseFloat(receipt.total).toFixed(2));
+  $('#rPaid').text(parseFloat(receipt.paid).toFixed(2));
+  $('#rChange').text(parseFloat(receipt.change).toFixed(2));
+
+  $('#receiptModal').css('display', 'block');
 }
 
-function closeModal() {
-  document.getElementById('receiptModal').classList.remove('open');
-}
+function closeReceipt() { $('#receiptModal').css('display', 'none'); }
+function printReceipt() { window.print(); }
+function exportReceiptCSV() {
+  if (!currentReceiptData) return;
+  let csv = "Transaction ID,Date,Item Name,Price,Qty,Subtotal\n";
+  currentReceiptData.items.forEach(item => {
+    let subtotal = item.price * item.qty;
+    csv += `${currentReceiptData.id},${currentReceiptData.date},"${item.name}",${item.price},${item.qty},${subtotal}\n`;
+  });
+  csv += `\n,,,Total,,${currentReceiptData.total}\n,,,Cash,,${currentReceiptData.paid}\n,,,Change,,${currentReceiptData.change}\n`;
 
-// ── Toast ──────────────────────────────────────────────────────────────────
-function showToast(type, msg) {
-  const container = document.getElementById('toastContainer');
-  const div = document.createElement('div');
-  div.className = 'toast ' + type;
-  div.textContent = (type === 'success' ? '✓  ' : '✕  ') + msg;
-  container.appendChild(div);
-  setTimeout(() => div.remove(), 3500);
+  let blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  let link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = `Receipt_${currentReceiptData.id}.csv`;
+  link.style.display = 'none';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
 }
