@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+    <!DOCTYPE html>
         <html lang="en">
             <head>
                 <meta charset="UTF-8">
@@ -48,11 +48,11 @@
                         <th style="text-align:center; vertical-align:middle;">Type</th>
                         <th style="text-align:center; vertical-align:middle;">Size</th>
                         <th style="text-align:center; vertical-align:middle;">Dept</th>
-                        <th style="text-align:center; vertical-align:middle;">Incoming Qty</th>
                         <th style="text-align:center; vertical-align:middle;">Current Qty</th>
+                        <th style="text-align:center; vertical-align:middle;">Incoming Qty</th>
                         <th style="text-align:center; vertical-align:middle;">Price</th>
-                        <th style="text-align:center; vertical-align:middle;">Action</th>
                         <th style="text-align:center; vertical-align:middle;">Incoming Status</th>
+                        <th style="text-align:center; vertical-align:middle;">Action</th>
                     </tr>
                 </thead>
                 <tbody></tbody>
@@ -61,95 +61,90 @@
     </div>
 
     <div class="modal fade" id="productModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered modal-lg">
-    <div class="modal-content">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+          <div class="modal-content">
 
-      <!-- Modal Header -->
-      <div class="modal-header">
-        <h5 class="modal-title">Product</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
+            <!-- Modal Header -->
+            <div class="modal-header">
+              <h5 class="modal-title">Product</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
 
-      <!-- Modal Body -->
-      <div class="modal-body">
-  <form id="productForm">
+            <!-- Modal Body -->
+            <div class="modal-body">
+        <form id="productForm">
 
-    <div class="mb-3">
-      <label for="code" class="form-label">Product Code</label>
-      <input type="text" class="form-control" id="code" placeholder="Enter product code">
-      <small id="codeError" class="text-danger"></small>
+          <div class="mb-3">
+            <label for="code" class="form-label">Product Code</label>
+            <input type="text" class="form-control" id="code" placeholder="Enter product code">
+            <small id="codeError" class="text-danger"></small>
+          </div>
+
+          <div class="mb-3">
+            <label for="type" class="form-label">Type</label>
+            <select class="form-select" id="type" onchange="checkType(this); checkSizeByType();">
+              <option value="">Select Type</option>
+              <option>ID Lace</option>
+              <option>Book</option>
+              <option>Uniform</option>
+              <option>Merchandise</option>
+              <option value="Other">Other</option>
+            </select>
+            <small id="typeError" class="text-danger"></small>
+          </div>
+
+          <div class="mb-3" id="otherTypeContainer" style="display:none;">
+            <label for="otherType" class="form-label">Other Type</label>
+            <input type="text" class="form-control" id="otherType" placeholder="Enter type">
+            <small id="otherTypeError" class="text-danger"></small>
+          </div>
+          
+
+          <div class="mb-3">
+            <label for="size" class="form-label">Size</label>
+            <select class="form-select" id="size">
+              <option value="">Select Size</option>
+              <option>Small</option>
+              <option>Medium</option>
+              <option>Large</option>
+              <option>None</option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label for="dept" class="form-label">Department</label>
+            <select class="form-select" id="dept">
+              <option value="">Select Department</option>
+              <option>CICT</option>
+              <option>CBEA</option>
+              <option>CAFA</option>
+              <option>CAL</option>
+              <option>COE</option>
+              <option>COED</option>
+              <option>CS</option>
+              <option>CIT</option>
+            </select>
+            <small id="deptError" class="text-danger"></small>
+          </div>
+
+          <div class="mb-3">
+            <label for="incoming" class="form-label">Incoming Qty</label>
+            <input type="number" class="form-control" id="incoming" placeholder="0">
+            <small id="incomingError" class="text-danger"></small>
+          </div>
+
+          <div class="mb-3">
+            <label for="price" class="form-label">Price</label>
+            <input type="number" class="form-control" id="price" placeholder="0.00">
+            <small id="priceError" class="text-danger"></small>
+          </div>
+
+          <div class="text-center">
+            <button type="button" class="btn btn-primary w-100" onclick="store()">Save</button>
+          </div>
+
+      </form>
     </div>
-
-    <div class="mb-3">
-      <label for="type" class="form-label">Type</label>
-      <select class="form-select" id="type" onchange="checkType(this); checkSizeByType();">
-        <option value="">Select Type</option>
-        <option>ID Lace</option>
-        <option>Book</option>
-        <option>Uniform</option>
-        <option>Merchandise</option>
-        <option value="Other">Other</option>
-      </select>
-      <small id="typeError" class="text-danger"></small>
-    </div>
-
-    <div class="mb-3" id="otherTypeContainer" style="display:none;">
-      <label for="otherType" class="form-label">Other Type</label>
-      <input type="text" class="form-control" id="otherType" placeholder="Enter type">
-      <small id="otherTypeError" class="text-danger"></small>
-    </div>
-
-    <div class="mb-3">
-      <label for="size" class="form-label">Size</label>
-      <select class="form-select" id="size">
-        <option value="">Select Size</option>
-        <option>Small</option>
-        <option>Medium</option>
-        <option>Large</option>
-        <option>None</option>
-      </select>
-    </div>
-
-    <div class="mb-3">
-      <label for="dept" class="form-label">Department</label>
-      <select class="form-select" id="dept">
-        <option value="">Select Department</option>
-        <option>CICT</option>
-        <option>CBEA</option>
-        <option>CAFA</option>
-        <option>CAL</option>
-        <option>COE</option>
-        <option>COED</option>
-        <option>CS</option>
-        <option>CIT</option>
-      </select>
-      <small id="deptError" class="text-danger"></small>
-    </div>
-
-    <div class="mb-3">
-      <label for="incoming" class="form-label">Incoming Qty</label>
-      <input type="number" class="form-control" id="incoming" placeholder="0">
-      <small id="incomingError" class="text-danger"></small>
-    </div>
-
-    <div class="mb-3">
-      <label for="qty" class="form-label">Current Qty</label>
-      <input type="number" class="form-control" id="qty" placeholder="0">
-      <small id="qtyError" class="text-danger"></small>
-    </div>
-
-    <div class="mb-3">
-      <label for="price" class="form-label">Price</label>
-      <input type="number" class="form-control" id="price" placeholder="0.00">
-      <small id="priceError" class="text-danger"></small>
-    </div>
-
-    <div class="text-center">
-      <button type="button" class="btn btn-primary w-100" onclick="store()">Save</button>
-    </div>
-
-  </form>
-</div>
 
             <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
