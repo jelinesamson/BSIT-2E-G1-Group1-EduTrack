@@ -91,19 +91,19 @@ function renderTable(data) {
         tdProd.textContent = entry.prod_name;
         tr.appendChild(tdProd);
 
-        // Incoming qty (Add/Edit only)
+        // Incoming qty
         const tdIncoming = document.createElement('td');
-        if (entry.notes === 'Add' || entry.notes === 'Edit') {
-            tdIncoming.textContent = entry.qty;
+        if (parseInt(entry.incoming_qty) > 0 || entry.notes === 'Add' || entry.notes === 'Edit' || entry.notes === 'Receive') {
+            tdIncoming.textContent = entry.incoming_qty || 0;
         } else {
             tdIncoming.innerHTML = '<span class="muted">—</span>';
         }
         tr.appendChild(tdIncoming);
 
-        // Sales qty (Sale only)
+        // Sales qty
         const tdSales = document.createElement('td');
-        if (entry.notes === 'Sale') {
-            tdSales.textContent = entry.qty;
+        if (parseInt(entry.sales) > 0 || entry.notes.startsWith('Sale')) {
+            tdSales.textContent = entry.sales || 0;
         } else {
             tdSales.innerHTML = '<span class="muted">—</span>';
         }
@@ -143,12 +143,8 @@ function renderSummary(data) {
     let currentStock = 0;
 
     data.forEach(entry => {
-        if (entry.notes === 'Add' || entry.notes === 'Edit') {
-            totalIncoming += parseInt(entry.qty);
-        }
-        if (entry.notes === 'Sale') {
-            totalSales += parseInt(entry.qty);
-        }
+        totalIncoming += parseInt(entry.incoming_qty) || 0;
+        totalSales += parseInt(entry.sales) || 0;
     });
 
     // Last row = most recent stock snapshot
@@ -221,8 +217,8 @@ function exportCSV() {
 
     // Build data rows
     currentData.forEach((entry, index) => {
-        const incoming = (entry.notes === 'Add' || entry.notes === 'Edit') ? entry.qty : '';
-        const sales    = (entry.notes === 'Sale') ? entry.qty : '';
+        const incoming = (parseInt(entry.incoming_qty) > 0 || entry.notes === 'Add' || entry.notes === 'Edit' || entry.notes === 'Receive') ? (entry.incoming_qty || 0) : '';
+        const sales    = (parseInt(entry.sales) > 0 || entry.notes.startsWith('Sale')) ? (entry.sales || 0) : '';
 
         const row = [
             index + 1,

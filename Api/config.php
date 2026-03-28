@@ -1,5 +1,5 @@
 <?php
-    include("env.php");
+    require_once("env.php");
      try{
           
      $conn = mysqli_connect( DB_HOST,
@@ -10,4 +10,3 @@
      catch(mysqli_sql_exception){
           echo "Could not Connect to the server! <br>";
      }                    
-?>

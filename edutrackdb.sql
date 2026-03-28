@@ -21,12 +21,6 @@ SET time_zone = "+00:00";
 -- Database: `edutrackdb`
 --
 
--- --------------------------------------------------------
-
---
--- Table structure for table `accounts`
---
-
 CREATE TABLE `accounts` (
   `id` int(11) NOT NULL,
   `fullname` varchar(50) NOT NULL,
@@ -41,12 +35,6 @@ CREATE TABLE `accounts` (
 INSERT INTO `accounts` (`id`, `fullname`, `email`, `password`) VALUES
 (3, 'Jeline Buensuceso', 'admin@gmail.com', '$2y$10$k3sp/k0f.X5KZAPaM/59wuAT.ildMHwNTYDm93/TANngOmPeLWixG');
 
--- --------------------------------------------------------
-
---
--- Table structure for table `products`
---
-
 CREATE TABLE `products` (
   `id` int(11) NOT NULL,
   `product_code` varchar(50) NOT NULL,
@@ -59,19 +47,16 @@ CREATE TABLE `products` (
   `status` varchar(50) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Dumping data for table `products`
---
-
-INSERT INTO `products` (`id`, `product_code`, `product_type`, `size`, `department`, `quantity`, `incoming_qty`, `price`, `status`) VALUES
-(18, 'UNI001', 'Uniform', 'Small', 'CICT', 10, 0, 350, 'Successfully'),
-(21, 'LACE001', 'ID Lace', 'None', 'CICT', 0, 10, 120, 'On the Way'),
-(26, 'BOOK001', 'Book', 'None', 'CICT', 0, 10, 400, 'On the Way'),
-(27, 'PIN002', 'PIN', 'None', 'CBEA', 0, 50, 65, 'On the Way');
-
---
--- Indexes for dumped tables
---
+CREATE TABLE `product_journal` (
+  `id` int(11) NOT NULL,
+  `product_code` varchar(50) NOT NULL,
+  `incoming_qty` int(11) DEFAULT 0,
+  `quantity` int(11) DEFAULT 0,
+  `sales` int(11) DEFAULT 0,
+  `notes` varchar(50) NOT NULL,
+  `created_by` varchar(50) NOT NULL,
+  `date_time` timestamp DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Indexes for table `accounts`
@@ -85,6 +70,12 @@ ALTER TABLE `accounts`
 ALTER TABLE `products`
   ADD UNIQUE KEY `id` (`id`),
   ADD UNIQUE KEY `id_2` (`id`);
+
+--
+-- Indexes for table `product_journal`
+--
+ALTER TABLE `product_journal`
+  ADD PRIMARY KEY (`id`);
 
 --
 -- AUTO_INCREMENT for dumped tables
@@ -101,6 +92,12 @@ ALTER TABLE `accounts`
 --
 ALTER TABLE `products`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=28;
+
+--
+-- AUTO_INCREMENT for table `product_journal`
+--
+ALTER TABLE `product_journal`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

@@ -1,7 +1,8 @@
 <?php
 // Api/salesManagement.php
 
-include('config.php');
+require_once 'config.php';
+require_once 'inventoryManagement.php';
 
 // check for db if connected
 if (!$conn) {
@@ -15,7 +16,7 @@ if (isset($_GET['api'])) {
 
     // get product
     if ($_GET['api'] === 'products') {
-        $query = "SELECT id, name, price, qty AS stock FROM product WHERE qty > 0";
+        $query = "SELECT id, product_code, CONCAT(product_code, ' - ', product_type) AS name, price, quantity AS stock FROM products WHERE quantity > 0";
         $result = mysqli_query($conn, $query);
 
         // error if sql fails
@@ -49,10 +50,10 @@ if (isset($_GET['api'])) {
             $pid = intval($item['product_id']);
             $qty_needed = intval($item['qty']);
 
-            $res = mysqli_query($conn, "SELECT name, price, qty FROM product WHERE id = $pid");
+            $res = mysqli_query($conn, "SELECT product_code, CONCAT(product_code, ' - ', product_type) AS name, price, quantity FROM products WHERE id = $pid");
             $prod = mysqli_fetch_assoc($res);
 
-            if (!$prod || $prod['qty'] < $qty_needed) {
+            if (!$prod || $prod['quantity'] < $qty_needed) {
                 echo json_encode(['error' => "Insufficient stock for " . ($prod['name'] ?? 'Unknown Item')]); exit;
             }
             $productsToBuy[$pid] = $prod;
@@ -62,29 +63,23 @@ if (isset($_GET['api'])) {
         if ($paid < $total) { echo json_encode(['error' => 'Insufficient payment. Total is ₱' . number_format($total, 2)]); exit; }
 
         $change = $paid - $total;
-        $vat = $total * 0.12; 
         $txnId = 'TXN-' . strtoupper(substr(uniqid(), -7));
-
-        $stmt = $conn->prepare("INSERT INTO product_journal (prod_id, qty, total_qty, notes, status, unit_price, total_price, paid, `change`, vat_amount, created_by, date_time) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())");
 
         foreach ($cart as $item) {
             $pid = intval($item['product_id']);
             $qty_sold = intval($item['qty']);
             
             $prod = $productsToBuy[$pid];
+            $pcode = $prod['product_code'];
             
-            $unit_price = $prod['price'];
-            $total_price = $unit_price * $qty_sold;
-            $new_stock = $prod['qty'] - $qty_sold;
+            $new_stock = $prod['quantity'] - $qty_sold;
 
-            mysqli_query($conn, "UPDATE product SET qty = $new_stock WHERE id = $pid");
+            mysqli_query($conn, "UPDATE products SET quantity = $new_stock WHERE id = $pid");
             
             $notes = "Sale $txnId";
-            $status = "sales";
             $admin = "Cashier";
             
-            $stmt->bind_param("iiissddddds", $pid, $qty_sold, $new_stock, $notes, $status, $unit_price, $total_price, $paid, $change, $vat, $admin);
-            $stmt->execute();
+            logJournal($conn, $pcode, 0, $qty_sold, $notes, $admin);
         }
 
         $receipt = ['id' => $txnId, 'date' => date('Y-m-d H:i:s'), 'items' => $cart, 'total' => $total, 'paid' => $paid, 'change' => $change];

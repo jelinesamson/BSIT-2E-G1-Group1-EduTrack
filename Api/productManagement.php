@@ -1,5 +1,6 @@
 <?php
-    include "config.php";
+    require_once "config.php";
+    require_once "inventoryManagement.php";
     if (isset($_POST['action'])) {
     if ($_POST['action'] == "store") {
 		$payload = json_decode($_POST['payload']);
@@ -20,6 +21,7 @@ $statement->bind_param("ssssiids",
     $payload->status
 );
 		if ($statement->execute()) {
+            logJournal($conn, $payload->code, $payload->incoming_qty, 0, "Add", "Admin");
 			echo json_encode([
 				"status" => "success",
 				"message" => "Product added Successfully"
@@ -88,6 +90,8 @@ if ($_POST['action'] == "receive") {
     $update->bind_param("is", $newQty, $code);
     $update->execute();
 
+    logJournal($conn, $code, $incoming, 0, "Receive", "Admin");
+
     echo json_encode([
         "status" => "success",
         "message" => "Stock moved to current quantity"
@@ -121,6 +125,7 @@ if ($_POST['action'] == "update") {
     );
 
     if ($stmt->execute()) {
+        logJournal($conn, $payload->code, $payload->incoming_qty, 0, "Edit", "Admin");
         echo json_encode([
             "status" => "success",
             "message" => "Updated successfully"
@@ -140,6 +145,7 @@ if ($_POST['action'] == "update") {
     $stmt->bind_param("s", $code);
 
     if ($stmt->execute()) {
+        logJournal($conn, $code, 0, 0, "Delete", "Admin");
         echo json_encode([
             "status" => "success",
             "message" => "Product deleted successfully"
