@@ -90,7 +90,7 @@ if ($_POST['action'] == "receive") {
     $update->bind_param("is", $newQty, $code);
     $update->execute();
 
-    logJournal($conn, $code, $incoming, 0, "Receive", "Admin");
+    logJournal($conn, $code, 0, 0, "Receive", "Admin");
 
     echo json_encode([
         "status" => "success",

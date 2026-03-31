@@ -92,19 +92,26 @@ function renderTable(data) {
         tr.appendChild(tdProd);
 
         // Incoming qty
-        const tdIncoming = document.createElement('td');
-        if (parseInt(entry.incoming_qty) > 0 || entry.notes === 'Add' || entry.notes === 'Edit' || entry.notes === 'Receive') {
-            tdIncoming.textContent = entry.incoming_qty || 0;
-        } else {
-            tdIncoming.innerHTML = '<span class="muted">—</span>';
-        }
-        tr.appendChild(tdIncoming);
+        // Incoming qty
+const tdIncoming = document.createElement('td');
+if (entry.notes === 'Add' || entry.notes === 'Edit' || entry.notes === 'Receive') {
+    tdIncoming.textContent = entry.incoming_quantity || 0;
+} else if (entry.notes.startsWith('Sale')) {
+     tdIncoming.textContent = entry.incoming_quantity || 0;
+} else {
+    tdIncoming.innerHTML = '<span class="muted">—</span>';
+}
+tr.appendChild(tdIncoming);
 
         // Sales qty
         const tdSales = document.createElement('td');
+        
         if (parseInt(entry.sales) > 0 || entry.notes.startsWith('Sale')) {
+           
             tdSales.textContent = entry.sales || 0;
+            
         } else {
+          
             tdSales.innerHTML = '<span class="muted">—</span>';
         }
         tr.appendChild(tdSales);
@@ -143,7 +150,7 @@ function renderSummary(data) {
     let currentStock = 0;
 
     data.forEach(entry => {
-        totalIncoming += parseInt(entry.incoming_qty) || 0;
+        totalIncoming = parseInt(entry.incoming_qty) || 0;
         totalSales += parseInt(entry.sales) || 0;
     });
 
@@ -159,79 +166,79 @@ function renderSummary(data) {
     document.getElementById('summaryCards').classList.add('visible');
 }
 
-// Hide summary cards
-function hideSummaryCards() {
-    document.getElementById('summaryCards').classList.remove('visible');
-}
-
-// Show status message in table body
-function showStatus(message) {
-    const tbody = document.getElementById('journalBody');
-    tbody.innerHTML = '<tr class="status-row"><td colspan="8">' + message + '</td></tr>';
-}
-
-// Format MySQL timestamp to readable date
-function formatDateTime(dateStr) {
-    if (!dateStr) return '—';
-    const d = new Date(dateStr);
-    return d.toLocaleDateString('en-US', {
-        month: 'short', day: 'numeric', year: 'numeric'
-    }) + ' ' + d.toLocaleTimeString('en-US', {
-        hour: 'numeric', minute: '2-digit', hour12: true
-    });
-}
-
-// Update print header with product name and date range
-function updatePrintHeader() {
-    const select = document.getElementById('productSelect');
-    const prodName = select.options[select.selectedIndex].text;
-    const dateFrom = document.getElementById('dateFrom').value;
-    const dateTo   = document.getElementById('dateTo').value;
-
-    document.getElementById('printTitle').textContent = 'Inventory Journal — ' + prodName;
-
-    let dateRange = '';
-    if (dateFrom && dateTo) {
-        dateRange = 'Period: ' + dateFrom + ' to ' + dateTo;
-    } else {
-        dateRange = 'All records';
-    }
-    document.getElementById('printDateRange').textContent = dateRange;
-}
-
-// Trigger browser print dialog
-function printPage() {
-    window.print();
-}
-
-// Export journal data as CSV download
-function exportCSV() {
-    if (!currentData || currentData.length === 0) {
-        alert('Please search for a product first.');
-        return;
+    // Hide summary cards
+    function hideSummaryCards() {
+        document.getElementById('summaryCards').classList.remove('visible');
     }
 
-    // CSV header
-    const headers = ['#', 'Product', 'Incoming', 'Sales', 'Notes', 'T. Qty', 'Date / Time', 'By'];
-    const rows = [headers.join(',')];
+    // Show status message in table body
+    function showStatus(message) {
+        const tbody = document.getElementById('journalBody');
+        tbody.innerHTML = '<tr class="status-row"><td colspan="8">' + message + '</td></tr>';
+    }
 
-    // Build data rows
-    currentData.forEach((entry, index) => {
-        const incoming = (parseInt(entry.incoming_qty) > 0 || entry.notes === 'Add' || entry.notes === 'Edit' || entry.notes === 'Receive') ? (entry.incoming_qty || 0) : '';
-        const sales    = (parseInt(entry.sales) > 0 || entry.notes.startsWith('Sale')) ? (entry.sales || 0) : '';
+    // Format MySQL timestamp to readable date
+    function formatDateTime(dateStr) {
+        if (!dateStr) return '—';
+        const d = new Date(dateStr);
+        return d.toLocaleDateString('en-US', {
+            month: 'short', day: 'numeric', year: 'numeric'
+        }) + ' ' + d.toLocaleTimeString('en-US', {
+            hour: 'numeric', minute: '2-digit', hour12: true
+        });
+    }
 
-        const row = [
-            index + 1,
-            '"' + (entry.prod_name || '').replace(/"/g, '""') + '"',
-            incoming,
-            sales,
-            entry.notes,
-            entry.total_qty,
-            '"' + formatDateTime(entry.date_time) + '"',
-            '"' + (entry.created_by || '').replace(/"/g, '""') + '"'
-        ];
-        rows.push(row.join(','));
-    });
+    // Update print header with product name and date range
+    function updatePrintHeader() {
+        const select = document.getElementById('productSelect');
+        const prodName = select.options[select.selectedIndex].text;
+        const dateFrom = document.getElementById('dateFrom').value;
+        const dateTo   = document.getElementById('dateTo').value;
+
+        document.getElementById('printTitle').textContent = 'Inventory Journal — ' + prodName;
+
+        let dateRange = '';
+        if (dateFrom && dateTo) {
+            dateRange = 'Period: ' + dateFrom + ' to ' + dateTo;
+        } else {
+            dateRange = 'All records';
+        }
+        document.getElementById('printDateRange').textContent = dateRange;
+    }
+
+    // Trigger browser print dialog
+    function printPage() {
+        window.print();
+    }
+
+    // Export journal data as CSV download
+    function exportCSV() {
+        if (!currentData || currentData.length === 0) {
+            alert('Please search for a product first.');
+            return;
+        }
+
+        // CSV header
+        const headers = ['#', 'Product', 'Incoming', 'Sales', 'Notes', 'T. Qty', 'Date / Time', 'By'];
+        const rows = [headers.join(',')];
+
+        // Build data rows
+        currentData.forEach((entry, index) => {
+            const incoming = (parseInt(entry.incoming_qty) > 0 || entry.notes === 'Add' || entry.notes === 'Edit' || entry.notes === 'Receive') ? (entry.incoming_qty || 0) : '';
+            const sales    = (parseInt(entry.sales) > 0 || entry.notes.startsWith('Sale')) ? (entry.sales || 0) : '';
+
+            const row = [
+                index + 1,
+                '"' + (entry.prod_name || '').replace(/"/g, '""') + '"',
+                incoming,
+                sales,
+                entry.notes,
+                entry.total_qty,
+                '"' + formatDateTime(entry.date_time) + '"',
+                '"' + (entry.created_by || '').replace(/"/g, '""') + '"'
+            ];
+            rows.push(row.join(','));
+        });
 
     // Create blob and trigger download
     const csvContent = rows.join('\n');
