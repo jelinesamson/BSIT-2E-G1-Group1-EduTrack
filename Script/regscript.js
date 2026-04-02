@@ -2,7 +2,8 @@ const API = "/BSIT-2E-G1-Group1-EduTrack/Api/register.php";
 
 // ELEMENTS
 let registerform = $("#registerForm");
-let fullName = $("#fullName");
+let firstName = $("#firstName");
+let lastName = $("#lastName");
 let regemail = $("#regemail");
 let regpassword = $("#regpassword");
 let confirmPassword = $("#confirmPassword");
@@ -19,7 +20,8 @@ const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
 // STORE FUNCTION
 function store() {
   let payload = {
-    fullName: fullName.val(),
+    firstName: firstName.val(),
+    lastName: lastName.val(),
     regemail: regemail.val(),
     regpassword: regpassword.val(),
   };
@@ -63,8 +65,10 @@ toggleCPassword.on("click", function () {
 // ERROR HANDLING
 function getErrorElement(input) {
   switch (input.attr("id")) {
-    case "fullName":
-      return $("#fullNameError");
+    case "firstName":
+      return $("#firstNameError");
+    case "lastName":
+      return $("#lastNameError");
     case "regemail":
       return $("#signupEmailErr");
     case "regpassword":
@@ -87,51 +91,117 @@ function setSuccess(input) {
 }
 
 // VALIDATION
+function validateFirstName() {
+  let value = firstName.val().trim();
+  if (value === "") {
+    setError(firstName, "First name is required");
+    return false;
+  } else if (!namePattern.test(value)) {
+    setError(firstName, "At least 3 letters only");
+    return false;
+  } else {
+    setSuccess(firstName);
+    return true;
+  }
+}
+
+function validateLastName() {
+  let value = lastName.val().trim();
+  if (value === "") {
+    setError(lastName, "Last name is required");
+    return false;
+  } else if (!namePattern.test(value)) {
+    setError(lastName, "At least 3 letters only");
+    return false;
+  } else {
+    setSuccess(lastName);
+    return true;
+  }
+}
+
+function validateregEmail() {
+  let value = regemail.val().trim();
+  if (value === "") {
+    setError(regemail, "Email is required");
+    return false;
+  } else if (!emailPattern.test(value)) {
+    setError(regemail, "Invalid email format");
+    return false;
+  } else {
+    setSuccess(regemail);
+    return true;
+  }
+}
+
+function validateregPassword() {
+  let value = regpassword.val().trim();
+  if (value === "") {
+    setError(regpassword, "Password is required");
+    return false;
+  } else if (!passwordPattern.test(value)) {
+    setError(regpassword, "Must be 8 chars, A-Z, a-z, 0-9");
+    return false;
+  } else {
+    setSuccess(regpassword);
+    return true;
+  }
+}
+
+function validateConfirmPassword() {
+  let value = confirmPassword.val().trim();
+  if (value === "") {
+    setError(confirmPassword, "Confirm your password");
+    return false;
+  } else if (value !== regpassword.val()) {
+    setError(confirmPassword, "Passwords do not match");
+    return false;
+  } else {
+    setSuccess(confirmPassword);
+    return true;
+  }
+}
+
 function validateInputs() {
-  let isValid = true;
-
-  if (!namePattern.test(fullName.val().trim())) {
-    setError(fullName, "Full Name must be at least 3 characters.");
-    isValid = false;
-  } else setSuccess(fullName);
-
-  if (!emailPattern.test(regemail.val().trim())) {
-    setError(regemail, "Invalid email.");
-    isValid = false;
-  } else setSuccess(regemail);
-
-  if (!passwordPattern.test(regpassword.val())) {
-    setError(regpassword, "Weak password.");
-    isValid = false;
-  } else setSuccess(regpassword);
-
-  if (
-    confirmPassword.val() !== regpassword.val() ||
-    confirmPassword.val() === ""
-  ) {
-    setError(confirmPassword, "Passwords do not match.");
-    isValid = false;
-  } else setSuccess(confirmPassword);
-
-  registerBtn.prop("disabled", !isValid);
-
-  return isValid;
+  return (
+    validateFirstName() &&
+    validateLastName() &&
+    validateregEmail() &&
+    validateregPassword() &&
+    validateConfirmPassword()
+  );
 }
 
 // EVENTS
-fullName.on("blur", validateInputs);
+firstName.on("blur", validateInputs);
+lastName.on("blur", validateInputs);
 regemail.on("blur", validateInputs);
 regpassword.on("blur", validateInputs);
 confirmPassword.on("blur", validateInputs);
 
-registerform.on("input", validateInputs);
+function checkForm() {
+  if (validateInputs()) {
+    registerBtn.prop("disabled", false);
+  } else {
+    registerBtn.prop("disabled", true);
+  }
+}
+firstName.on("blur", validateFirstName);
+lastName.on("blur", validateLastName);
+regemail.on("blur", validateregEmail);
+regpassword.on("blur", validateregPassword);
+confirmPassword.on("blur", validateConfirmPassword);
 
+firstName.on("input", checkForm);
+lastName.on("input", checkForm);
+regemail.on("input", checkForm);
+regpassword.on("input", checkForm);
+confirmPassword.on("input", checkForm);
 registerform.on("submit", function (e) {
   e.preventDefault();
 
   if (validateInputs()) {
     store();
-    registerform[0].reset(); // reset form
+    registerform[0].reset();
     registerBtn.prop("disabled", true);
   }
 });

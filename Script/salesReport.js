@@ -54,13 +54,19 @@ function fillMonths(months, selected) {
 
 function fillTypes(types, selected) {
   const sel = document.getElementById('selType');
-  while (sel.options.length > 1) sel.remove(1);
-  types.forEach(t => {
-    const o = Object.assign(document.createElement('option'), { value: t, textContent: t });
-    if (t === selected) o.selected = true;
-    sel.appendChild(o);
-  });
+
+  if (sel.options.length <= 1) {
+    types.forEach(t => {
+      const o = document.createElement('option');
+      o.value = t;
+      o.textContent = t;
+      sel.appendChild(o);
+    });
+  }
+
+  sel.value = selected;
 }
+
 
 // ── Render KPI ────────────────────────────────────────────────────────────────
 function renderKPI(kpi) {

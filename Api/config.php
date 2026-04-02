@@ -1,4 +1,8 @@
 <?php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
     require_once("env.php");
      try{
           
@@ -10,3 +14,10 @@
      catch(mysqli_sql_exception){
           echo "Could not Connect to the server! <br>";
      }                    
+
+     function requireLogin() {
+    if (!isset($_SESSION['account_id'])) {
+        header("Location: ../"); // redirect to login
+        exit();
+    }
+}

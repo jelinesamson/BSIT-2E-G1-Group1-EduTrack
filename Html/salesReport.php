@@ -1,8 +1,6 @@
 <?php
-/**
- * EduTrack — Sales Report Page
- * File: Html/salesReport.php
- */
+include("../Api/config.php");
+requireLogin();
 ?>
 <!DOCTYPE html>
 <html lang="en">

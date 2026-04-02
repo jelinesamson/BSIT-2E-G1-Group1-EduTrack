@@ -7,23 +7,26 @@ require_once "config.php";
  * Logs a journal entry into product_journal.
  * Called by teammates (Product Management, Sales Management) whenever stock changes.
  */
-function logJournal($conn, $product_code, $action_incoming_qty, $action_sales, $notes, $created_by) {
-    // Step 1: Get the current stock from product table as a snapshot
-    $stmt = $conn->prepare("SELECT quantity FROM products WHERE product_code = ?");
-    $stmt->bind_param("s", $product_code);
-    $stmt->execute();
-    $result = $stmt->get_result()->fetch_assoc();
-    $quantity = $result['quantity'] ?? 0;
+function logJournal($conn, $product_id, $incoming_qty, $sales, $notes, $journal_qty, $account_id) {
+    $product_id = intval($product_id);
+    $incoming_qty = intval($incoming_qty);
+    $sales = intval($sales);
+    $journal_qty = intval($journal_qty);
+    $account_id = intval($account_id);
+    $notes = mysqli_real_escape_string($conn, $notes);
 
-    // Step 2: Insert the journal entry with the snapshot of current stock
-    $stmt = $conn->prepare(
-        "INSERT INTO product_journal (product_code, incoming_quantity, quantity, sales, notes, created_by)
-         VALUES (?, ?, ?, ?, ?, ?)"
-    );
-    $stmt->bind_param("siiiss", $product_code, $action_incoming_qty, $quantity, $action_sales, $notes, $created_by);
-    $stmt->execute();
+    $stmt = mysqli_query($conn, "
+        INSERT INTO product_journal
+        (product_id, incoming_quantity, sales, notes, journal_qty, account_id, date_time)
+        VALUES
+        ($product_id, $incoming_qty, $sales, '$notes', $journal_qty, $account_id, NOW())
+    ");
+
+    if (!$stmt) {
+        echo json_encode(['error' => 'Journal insert failed: ' . mysqli_error($conn)]);
+        exit;
+    }
 }
-
 
 // ─── API Actions (GET requests) ──────────────────────────────────────────────
 
@@ -32,11 +35,13 @@ if (isset($_GET['action'])) {
 
     // Returns all products for the filter dropdown
     if ($_GET['action'] == "getProducts") {
+
     $stmt = $conn->prepare("
-        SELECT DISTINCT product_code AS id, product_code AS name 
-        FROM product_journal 
-        ORDER BY product_code ASC
-    ");
+    SELECT DISTINCT p.product_id AS id, p.product_code AS name
+    FROM products p
+    INNER JOIN product_journal j ON p.product_id = j.product_id
+    ORDER BY p.product_code ASC
+");
     $stmt->execute();
     $result = $stmt->get_result();
 
@@ -50,11 +55,11 @@ if (isset($_GET['action'])) {
 }
 
     // Returns journal entries for a specific product, with optional date range
-    if ($_GET['action'] == "getJournal") {
+ if ($_GET['action'] == "getJournal") {
     $prod_id = trim($_GET['prod_id'] ?? '');
 
     if (empty($prod_id)) {
-        echo json_encode(["status" => "error", "message" => "Invalid product code."]);
+        echo json_encode(["status" => "error", "message" => "Invalid product ID."]);
         exit;
     }
 
@@ -62,8 +67,11 @@ if (isset($_GET['action'])) {
     $date_to   = $_GET['date_to'] ?? '';
 
     // Build query with optional date filter
+    $params = [$prod_id];
+    $types = "i"; // product_id is integer
+
+    $date_filter = "";
     if (!empty($date_from) && !empty($date_to)) {
-        // Validate date formats
         $df = DateTime::createFromFormat('Y-m-d', $date_from);
         $dt = DateTime::createFromFormat('Y-m-d', $date_to);
 
@@ -72,37 +80,35 @@ if (isset($_GET['action'])) {
             exit;
         }
 
-        // Append time to cover the full day range
         $date_from_full = $date_from . ' 00:00:00';
         $date_to_full   = $date_to . ' 23:59:59';
-
-        $stmt = $conn->prepare(
-            "SELECT pj.id, 
-                    COALESCE(CONCAT(p.product_code, ' - ', p.product_type), pj.product_code) AS prod_name, 
-                  p.incoming_qty,  pj.incoming_quantity, pj.sales, pj.notes, pj.quantity AS total_qty, 
-                    pj.date_time, pj.created_by
-             FROM product_journal pj
-             LEFT JOIN products p ON p.product_code = pj.product_code
-             WHERE pj.product_code = ?
-               AND pj.date_time BETWEEN ? AND ?
-             ORDER BY pj.date_time ASC"
-        );
-        $stmt->bind_param("sss", $prod_id, $date_from_full, $date_to_full);
-    } else {
-        // No date filter — return all entries for this product
-        $stmt = $conn->prepare(
-            "SELECT pj.id, 
-                    COALESCE(CONCAT(p.product_code, ' - ', p.product_type), pj.product_code) AS prod_name, 
-                    p.incoming_qty, pj.incoming_quantity, pj.sales, pj.notes, pj.quantity AS total_qty, 
-                    pj.date_time, pj.created_by
-             FROM product_journal pj
-             LEFT JOIN products p ON p.product_code = pj.product_code
-             WHERE pj.product_code = ?
-             ORDER BY pj.date_time ASC"
-        );
-        $stmt->bind_param("s", $prod_id);
+        $date_filter = " AND pj.date_time BETWEEN ? AND ?";
+        $params[] = $date_from_full;
+        $params[] = $date_to_full;
+        $types .= "ss";
     }
 
+        $query = "
+                SELECT pj.journal_id,
+                    CONCAT(p.product_code, ' - ', p.product_type) AS prod_name,
+                    pj.notes,
+                    pj.incoming_quantity,
+                    pj.sales,
+                    pj.journal_qty AS total_qty,
+                    pj.date_time,
+                    a.firstName AS account_name
+               FROM product_journal pj
+                LEFT JOIN products p ON p.product_id = pj.product_id
+                LEFT JOIN accounts a ON a.account_id = pj.account_id
+                WHERE pj.product_id = ?
+                $date_filter
+                ORDER BY pj.date_time ASC
+            ";
+
+    $stmt = $conn->prepare($query);
+
+    // Dynamically bind parameters
+    $stmt->bind_param($types, ...$params);
     $stmt->execute();
     $result = $stmt->get_result();
 

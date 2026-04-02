@@ -1,170 +1,157 @@
-// Inventory Management Script
-const API_BASE = '/BSIT-2E-G1-Group1-EduTrack/Api/inventoryManagement.php';
+    // Inventory Management Script
+    const API_BASE = '/BSIT-2E-G1-Group1-EduTrack/Api/inventoryManagement.php';
 
-// Stores last fetched journal data for CSV export
-let currentData = [];
+    // Stores last fetched journal data for CSV export
+    let currentData = [];
 
-// ── Init ──
-document.addEventListener('DOMContentLoaded', () => {
-    loadProducts();
-});
+    // ── Init ──
+    document.addEventListener('DOMContentLoaded', () => {
+        loadProducts();
+    });
 
-// Load products into dropdown
-function loadProducts() {
-    fetch(API_BASE + '?action=getProducts')
-        .then(res => res.json())
-        .then(response => {
-            if (response.status === 'success') {
-                const select = document.getElementById('productSelect');
-                response.data.forEach(product => {
-                    const option = document.createElement('option');
-                    option.value = product.id;
-                    option.textContent = product.name;
-                    select.appendChild(option);
-                });
-            }
-        })
-        .catch(err => {
-            console.error('Failed to load products:', err);
-        });
-}
-
-// Validate selection, fetch journal entries, render results
-function searchJournal() {
-    const prodId   = document.getElementById('productSelect').value;
-    const dateFrom = document.getElementById('dateFrom').value;
-    const dateTo   = document.getElementById('dateTo').value;
-
-    if (!prodId) {
-        alert('Please select a product first.');
-        return;
+    // Load products into dropdown
+    function loadProducts() {
+        fetch(API_BASE + '?action=getProducts')
+            .then(res => res.json())
+            .then(response => {
+                if (response.status === 'success') {
+                    const select = document.getElementById('productSelect');
+                    response.data.forEach(product => {
+                        const option = document.createElement('option');
+                        option.value = product.id;
+                        option.textContent = product.name;
+                        select.appendChild(option);
+                    });
+                }
+            })
+            .catch(err => {
+                console.error('Failed to load products:', err);
+            });
     }
 
-    showStatus('Loading...');
+    // Validate selection, fetch journal entries, render results
+    function searchJournal() {
+        const prodId   = document.getElementById('productSelect').value;
+        const dateFrom = document.getElementById('dateFrom').value;
+        const dateTo   = document.getElementById('dateTo').value;
 
-    // Build API URL with query params
-    let url = API_BASE + '?action=getJournal&prod_id=' + encodeURIComponent(prodId);
-    if (dateFrom) url += '&date_from=' + encodeURIComponent(dateFrom);
-    if (dateTo)   url += '&date_to=' + encodeURIComponent(dateTo);
+        if (!prodId) {
+            alert('Please select a product first.');
+            return;
+        }
 
-    fetch(url)
-        .then(res => res.json())
-        .then(response => {
-            if (response.status === 'success') {
-                currentData = response.data;
+        showStatus('Loading...');
 
-                if (currentData.length === 0) {
-                    showStatus('No records found for this product.');
-                    hideSummaryCards();
+        // Build API URL with query params
+        let url = API_BASE + '?action=getJournal&prod_id=' + encodeURIComponent(prodId);
+        if (dateFrom) url += '&date_from=' + encodeURIComponent(dateFrom);
+        if (dateTo)   url += '&date_to=' + encodeURIComponent(dateTo);
+
+        fetch(url)
+            .then(res => res.json())
+            .then(response => {
+                if (response.status === 'success') {
+                    console.log(response.data); 
+                    currentData = response.data;
+
+                    if (currentData.length === 0) {
+                        showStatus('No records found for this product.');
+                        hideSummaryCards();
+                    } else {
+                        renderTable(currentData);
+                        renderSummary(currentData);
+                        updatePrintHeader();
+                    }
                 } else {
-                    renderTable(currentData);
-                    renderSummary(currentData);
-                    updatePrintHeader();
+                    showStatus(response.message || 'An error occurred.');
+                    hideSummaryCards();
                 }
-            } else {
-                showStatus(response.message || 'An error occurred.');
+            })
+            .catch(err => {
+                console.error('Failed to fetch journal:', err);
+                showStatus('Failed to load data. Please try again.');
                 hideSummaryCards();
-            }
-        })
-        .catch(err => {
-            console.error('Failed to fetch journal:', err);
-            showStatus('Failed to load data. Please try again.');
-            hideSummaryCards();
-        });
-}
+            });
+    }
 
 // Render journal entries into the table
-function renderTable(data) {
-    const tbody = document.getElementById('journalBody');
-    tbody.innerHTML = '';
+    function renderTable(data) {
+        const tbody = document.getElementById('journalBody');
+        tbody.innerHTML = '';
 
-    data.forEach((entry, index) => {
-        const tr = document.createElement('tr');
+        data.forEach((entry, index) => {
+            const tr = document.createElement('tr');
 
-        // Row number
-        const tdNum = document.createElement('td');
-        tdNum.textContent = index + 1;
-        tr.appendChild(tdNum);
+            // Row number
+            const tdNum = document.createElement('td');
+            tdNum.textContent = index + 1;
+            tr.appendChild(tdNum);
 
-        // Product name
-        const tdProd = document.createElement('td');
-        tdProd.textContent = entry.prod_name;
-        tr.appendChild(tdProd);
+            // Product name
+            const tdProd = document.createElement('td');
+            tdProd.textContent = entry.prod_name;
+            tr.appendChild(tdProd);
 
-        // Incoming qty
-        // Incoming qty
-const tdIncoming = document.createElement('td');
-if (entry.notes === 'Add' || entry.notes === 'Edit' || entry.notes === 'Receive') {
-    tdIncoming.textContent = entry.incoming_quantity || 0;
-} else if (entry.notes.startsWith('Sale')) {
-     tdIncoming.textContent = entry.incoming_quantity || 0;
-} else {
-    tdIncoming.innerHTML = '<span class="muted">—</span>';
-}
-tr.appendChild(tdIncoming);
+            // Incoming qty
+          // Incoming qty
+            const tdIncoming = document.createElement('td');
+            tdIncoming.textContent = parseInt(entry.incoming_quantity) || 0;
+            tr.appendChild(tdIncoming);
 
-        // Sales qty
-        const tdSales = document.createElement('td');
-        
-        if (parseInt(entry.sales) > 0 || entry.notes.startsWith('Sale')) {
-           
-            tdSales.textContent = entry.sales || 0;
-            
-        } else {
-          
-            tdSales.innerHTML = '<span class="muted">—</span>';
-        }
-        tr.appendChild(tdSales);
+            // Sales qty
+            const tdSales = document.createElement('td');
+            tdSales.textContent = parseInt(entry.sales) || 0;
+            tr.appendChild(tdSales);
 
-        // Notes badge
-        const tdNotes = document.createElement('td');
-        const badge = document.createElement('span');
-        badge.className = 'badge badge-' + entry.notes.toLowerCase();
-        badge.textContent = entry.notes;
-        tdNotes.appendChild(badge);
-        tr.appendChild(tdNotes);
+            // Notes badge
+            const tdNotes = document.createElement('td');
+            const badge = document.createElement('span');
+            badge.className = 'badge badge-' + entry.notes.toLowerCase();
+            badge.textContent = entry.notes;
+            tdNotes.appendChild(badge);
+            tr.appendChild(tdNotes);
 
-        // Total quantity snapshot
-        const tdTotalQty = document.createElement('td');
-        tdTotalQty.textContent = entry.total_qty;
-        tr.appendChild(tdTotalQty);
+            // Total quantity snapshot
+            const tdTotalQty = document.createElement('td');
+            tdTotalQty.textContent = entry.total_qty;
+            tr.appendChild(tdTotalQty);
 
-        // Date/Time
-        const tdDate = document.createElement('td');
-        tdDate.textContent = formatDateTime(entry.date_time);
-        tr.appendChild(tdDate);
+            // Date/Time
+            const tdDate = document.createElement('td');
+            tdDate.textContent = formatDateTime(entry.date_time);
+            tr.appendChild(tdDate);
 
-        // Created by
-        const tdBy = document.createElement('td');
-        tdBy.textContent = entry.created_by || '—';
-        tr.appendChild(tdBy);
+            // Created by
+            const tdBy = document.createElement('td');
+            tdBy.textContent = entry.account_name || '—';
+            tr.appendChild(tdBy);
 
-        tbody.appendChild(tr);
-    });
-}
-
-// Compute summary values and show cards
-function renderSummary(data) {
-    let totalIncoming = 0;
-    let totalSales = 0;
-    let currentStock = 0;
-
-    data.forEach(entry => {
-        totalIncoming = parseInt(entry.incoming_qty) || 0;
-        totalSales += parseInt(entry.sales) || 0;
-    });
-
-    // Last row = most recent stock snapshot
-    if (data.length > 0) {
-        currentStock = parseInt(data[data.length - 1].total_qty);
+            tbody.appendChild(tr);
+        });
     }
 
-    document.getElementById('cardIncoming').textContent = totalIncoming;
-    document.getElementById('cardSales').textContent = totalSales;
-    document.getElementById('cardStock').textContent = currentStock;
+// Compute summary values and show cards
+    function renderSummary(data) {
+        let totalIncoming = 0;
+        let totalSales = 0;
+        let currentStock = 0;
 
-    document.getElementById('summaryCards').classList.add('visible');
-}
+        data.forEach(entry => {
+            totalIncoming = parseInt(entry.incoming_quantity) || 0;
+            totalSales += parseInt(entry.sales) || 0;
+        });
+
+        // Last row = most recent stock snapshot
+        if (data.length > 0) {
+            currentStock = parseInt(data[data.length - 1].total_qty) || 0;
+        }
+
+        document.getElementById('cardIncoming').textContent = totalIncoming;
+        document.getElementById('cardSales').textContent = totalSales;
+        document.getElementById('cardStock').textContent = currentStock;
+
+        document.getElementById('summaryCards').classList.add('visible');
+    }
 
     // Hide summary cards
     function hideSummaryCards() {
@@ -261,3 +248,41 @@ function renderSummary(data) {
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
 }
+
+function autoLoadJournal() {
+    const prodId = document.getElementById('productSelect').value;
+
+    if (!prodId) return;
+
+    showStatus('Loading...');
+
+    let url = API_BASE + '?action=getJournal&prod_id=' + encodeURIComponent(prodId);
+
+    fetch(url)
+        .then(res => res.json())
+        .then(response => {
+            if (response.status === 'success') {
+                currentData = response.data;
+
+                if (currentData.length === 0) {
+                    showStatus('No records found for this product.');
+                    hideSummaryCards();
+                } else {
+                    renderTable(currentData);
+                    renderSummary(currentData);
+                    updatePrintHeader();
+                }
+            } else {
+                showStatus(response.message || 'Error loading data.');
+                hideSummaryCards();
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            showStatus('Failed to load data.');
+        });
+}
+
+document.getElementById('productSelect').addEventListener('change', () => {
+    autoLoadJournal();
+});

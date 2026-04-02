@@ -172,15 +172,24 @@
 
         <form id="registerForm" novalidate>  
           <div class="modal-body">
-            <label class="form-label fw-bold">Full Name</label>
+            <label class="form-label fw-bold">First Name</label>
             <input
               type="text"
               class="form-control mt-1"
               placeholder="First Name"
-              id="fullName"
+              id="firstName"
             />
+            <small id="firstNameError" class="text-danger"></small>
+            <br />
 
-            <small id="fullNameError" class="text-danger"></small>
+            <label class="form-label fw-bold">Last Name</label>
+            <input
+              type="text"
+              class="form-control mt-1"
+              placeholder="Last Name"
+              id="lastName"
+            />
+            <small id="lastNameError" class="text-danger"></small>
             <br />
 
             <label class="form-label fw-bold">Email</label>

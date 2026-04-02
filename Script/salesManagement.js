@@ -25,7 +25,7 @@ function renderProducts(products) {
 
   products.forEach(p => {
     let card = `
-            <div class="product-card" onclick="addToCart(${p.id}, '${p.name}', ${p.price}, ${p.stock})">
+            <div class="product-card" onclick="addToCart(${p.product_id}, '${p.name}', ${p.price}, ${p.stock})">
                 <h4>${p.name}</h4>
                 <div class="price">₱${parseFloat(p.price).toFixed(2)}</div>
                 <div class="stock">Stock: ${p.stock}</div>

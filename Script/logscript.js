@@ -26,7 +26,7 @@ function postOne() {
       alert(response.message);
       if (response.status == "success") {
         window.location.href =
-          " /BSIT-2E-G1-Group1-EduTrack/Html/dashboard.php";
+          "/BSIT-2E-G1-Group1-EduTrack/Html/dashboard.php";
       }
     },
     error: function (error) {

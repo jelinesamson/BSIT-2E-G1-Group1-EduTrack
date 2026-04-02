@@ -1,3 +1,7 @@
+<?php
+include("../Api/config.php");
+requireLogin();
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
