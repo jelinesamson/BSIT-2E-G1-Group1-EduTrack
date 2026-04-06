@@ -16,7 +16,7 @@ require_once 'inventoryManagement.php';
 
         // get product
         if ($_GET['api'] === 'products') {
-            $query = "SELECT product_id, product_code, CONCAT(product_code, ' - ', product_type) AS name, price, quantity AS stock FROM products WHERE quantity > 0";
+            $query = "SELECT product_id, product_code, CONCAT(product_code, ' - ', product_type) AS name, price, quantity AS stock FROM products WHERE quantity > 0 AND is_deleted = 0";
             $result = mysqli_query($conn, $query);
 
             // error if sql fails

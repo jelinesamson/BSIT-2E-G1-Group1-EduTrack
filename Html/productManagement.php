@@ -119,7 +119,7 @@
                 <option>Small</option>
                 <option>Medium</option>
                 <option>Large</option>
-                <option>None</option>
+                <option value="None">None</option>
               </select>
             </div>
 

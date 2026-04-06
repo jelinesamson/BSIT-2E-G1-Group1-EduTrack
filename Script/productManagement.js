@@ -18,8 +18,11 @@ function checkSizeByType() {
     let type = $("#type").val();
 
     if (type === "Uniform" || type === "Merchandise") {
-        $("#size").prop("disabled", false).val("");
+        $("#size").prop("disabled", false);
+        $("#size option[value='None']").hide();
+        $("#size").val(""); // clear selection
     } else {
+        $("#size option[value='None']").show();
         $("#size").val("None").prop("disabled", true);
     }
 }
