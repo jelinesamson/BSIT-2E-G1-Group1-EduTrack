@@ -1,21 +1,35 @@
+<?php
+  include("../Api/config.php");
+  requireLogin();
+
+  if ($_SESSION['role'] === 'cashier') {
+    header("Location: salesManagement.php");
+    exit;
+    }
+
+?>
+
 <!doctype html>
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>EduTrack Dashboard</title>
+    <title>EduTrack</title>
     <link rel="stylesheet" href="../Css/systemNav.css" />
     <link rel="stylesheet" href="../Css/dashboard.css" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet" />
 </head>
-<body>
+<body >
+
 <div class="systemNav-container">
+    
 
     <!-- Sidebar -->
     <?php include("systemNav.php"); ?>
 
     <!-- Main -->
     <main class="main">
+        <div class="main-content">
         <header class="topbar">
             <button class="hamburger" id="menuBtn"><i data-lucide="menu"></i></button>
             <h2>Welcome to EduTrack!</h2>
@@ -52,13 +66,11 @@
 
             </div>
 
-            <div class="empty">
-                <p>Dashboard is currently empty. Start adding data to see your metrics.</p>
-            </div>
         </section>
     </main>
-</div>
 
+</div>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://unpkg.com/lucide@latest"></script>
 <script src="../Script/systemNav.js"></script>
 <script src="../Script/dashboard.js"></script>

@@ -124,7 +124,7 @@ if (!$insertTxn) {
     // Update stock
     mysqli_query($conn, "UPDATE products SET quantity = $new_stock WHERE product_id = $pid");
 
-    // ✅ Log journal: incoming = current stock BEFORE sale, sales = qty_sold, journal_qty = stock AFTER sale
+    //  Log journal: incoming = current stock BEFORE sale, sales = qty_sold, journal_qty = stock AFTER sale
     logJournal(
         $conn,
         $pid,

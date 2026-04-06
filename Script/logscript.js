@@ -1,8 +1,16 @@
-// LOGIN PAGE ELEMENTS
+
 let apiLog = "/BSIT-2E-G1-Group1-EduTrack/Api/login.php";
 let email = $("#email");
 let password = $("#password");
 let loginBtn = $("#loginBtn");
+
+const Toast = Swal.mixin({
+  toast: true,
+  position: 'top-end',
+  showConfirmButton: false,
+  timer: 2000,
+  timerProgressBar: true
+});
 
 let emailError = $("#emailError");
 let passwordError = $("#passwordError");
@@ -23,14 +31,42 @@ function postOne() {
     data: "action=postOne&payload=" + JSON.stringify(payload),
     dataType: "json",
     success: function (response) {
-      alert(response.message);
+
       if (response.status == "success") {
-        window.location.href =
-          "/BSIT-2E-G1-Group1-EduTrack/Html/dashboard.php";
+
+        Swal.fire({
+          icon: 'success',
+          title: 'Welcome back!',
+          text: response.message,
+          showConfirmButton: false,
+          timer: 1800
+        });
+
+        form[0].reset();
+        loginBtn.prop("disabled", false);
+
+        setTimeout(() => {
+          window.location.href =
+            "/BSIT-2E-G1-Group1-EduTrack/Html/dashboard.php";
+        }, 1800);
+
+      } else {
+
+        Swal.fire({
+          icon: 'error',
+          title: 'Login Failed',
+          text: response.message,
+          confirmButtonColor: '#d33'
+        });
+
       }
     },
-    error: function (error) {
-      alert(error.message);
+    error: function () {
+      Swal.fire({
+        icon: 'error',
+        title: 'Server Error',
+        text: 'Something went wrong. Please try again.'
+      });
     },
   });
 }
@@ -62,7 +98,7 @@ function validatePassword() {
 
 // ENABLE BUTTON
 function checkForm() {
-  loginError.text(""); // clear general error
+  loginError.text("");
   if (validateEmail() && validatePassword()) {
     loginBtn.prop("disabled", false);
   } else {
@@ -91,8 +127,7 @@ form.on("submit", function (e) {
   if (validateEmail() && validatePassword()) {
     if (email.val() != "" && password.val() != "") {
       postOne();
-      form[0].reset();
-      loginBtn.prop("disabled", true);
+      
     }
   }
 });

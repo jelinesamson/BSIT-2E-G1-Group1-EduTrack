@@ -3,10 +3,6 @@
 // Handles journal logging and retrieval for inventory tracking
 require_once "config.php";
 
-/**
- * Logs a journal entry into product_journal.
- * Called by teammates (Product Management, Sales Management) whenever stock changes.
- */
 function logJournal($conn, $product_id, $incoming_qty, $sales, $notes, $journal_qty, $account_id) {
     $product_id = intval($product_id);
     $incoming_qty = intval($incoming_qty);
@@ -68,7 +64,7 @@ if (isset($_GET['action'])) {
 
     // Build query with optional date filter
     $params = [$prod_id];
-    $types = "i"; // product_id is integer
+    $types = "i";
 
     $date_filter = "";
     if (!empty($date_from) && !empty($date_to)) {

@@ -80,7 +80,7 @@ if ($_POST['action'] == "update") {
 
     $status = ($payload->incoming_qty > 0) ? "On the Way" : "Successfully";
 
-    // 🔹 First, get the product_id from product_code
+    //  First, get the product_id from product_code
     $stmtId = $conn->prepare("SELECT product_id, quantity FROM products WHERE product_code = ?");
     $stmtId->bind_param("s", $payload->code);
     $stmtId->execute();
@@ -96,7 +96,7 @@ if ($_POST['action'] == "update") {
         exit;
     }
 
-    // 🔹 Update product using product_id
+    //  Update product using product_id
     $stmt = $conn->prepare("
         UPDATE products 
         SET product_type = ?, 
@@ -119,7 +119,7 @@ if ($_POST['action'] == "update") {
     );
 
     if ($stmt->execute()) {
-        // 🔹 Log journal with product_id
+        //  Log journal with product_id
         logJournal($conn, $product_id, $payload->incoming_qty, 0, "Edit", $quantity, $account_id);
 
         echo json_encode([
@@ -150,7 +150,7 @@ if ($_POST['action'] == "update") {
         exit;
     }
 
-    // 🔥 SOFT DELETE (not real delete)
+    //  SOFT DELETE (not real delete)
     $stmt = $conn->prepare("UPDATE products SET is_deleted = 1 WHERE product_id = ?");
     $stmt->bind_param("i", $product_id);
 
@@ -169,7 +169,7 @@ if ($_POST['action'] == "receive") {
     $code = $_POST['code'];
     $account_id = $_SESSION['account_id'] ?? null;
 
-    // 🔹 Get product_id, incoming_qty, quantity
+    //  Get product_id, incoming_qty, quantity
     $stmt = $conn->prepare("SELECT product_id, incoming_qty, quantity FROM products WHERE product_code = ?");
     $stmt->bind_param("s", $code);
     $stmt->execute();
@@ -188,7 +188,7 @@ if ($_POST['action'] == "receive") {
         exit;
     }
 
-    // 🔹 Move incoming → quantity
+    //  Move incoming → quantity
     $newQty = $qty + $incoming;
 
     $update = $conn->prepare("
@@ -199,7 +199,7 @@ if ($_POST['action'] == "receive") {
     $update->bind_param("ii", $newQty, $product_id);
     $update->execute();
 
-    // 🔥 Log the actual received stock
+    //  Log the actual received stock
     logJournal($conn, $product_id, 0, 0, "Receive", $newQty, $account_id);
 
     echo json_encode([

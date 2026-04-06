@@ -1,13 +1,19 @@
 <?php
-include("../Api/config.php");
-requireLogin();
+    include("../Api/config.php");
+    requireLogin();
+    
+    if ($_SESSION['role'] === 'cashier') {
+    header("Location: salesManagement.php");
+    exit;
+    }
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inventory Management — EduTrack</title>
+    <title>EduTrack</title>
 
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
@@ -22,6 +28,8 @@ requireLogin();
 
         <!-- Sidebar navigation (shared component) -->
         <?php include("systemNav.php"); ?>
+
+        <div class="main-content">
 
         <!-- Hamburger toggle for mobile -->
         <header class="topbar">
@@ -106,11 +114,12 @@ requireLogin();
                     </tr>
                 </tbody>
             </table>
-
+        </div>
         </div>
     </div>
 
     <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="../Script/systemNav.js"></script>
     <script src="../Script/inventoryManagement.js"></script>

@@ -11,23 +11,38 @@
 
     // Load products into dropdown
     function loadProducts() {
-        fetch(API_BASE + '?action=getProducts')
-            .then(res => res.json())
-            .then(response => {
-                if (response.status === 'success') {
-                    const select = document.getElementById('productSelect');
-                    response.data.forEach(product => {
-                        const option = document.createElement('option');
-                        option.value = product.id;
-                        option.textContent = product.name;
-                        select.appendChild(option);
-                    });
-                }
-            })
-            .catch(err => {
-                console.error('Failed to load products:', err);
+    fetch(API_BASE + '?action=getProducts')
+        .then(res => res.json())
+        .then(response => {
+            if (response.status === 'success') {
+                const select = document.getElementById('productSelect');
+                select.innerHTML = '<option value="">-- Select Product --</option>';
+                
+                response.data.forEach(product => {
+                    const option = document.createElement('option');
+                    option.value = product.id;
+                    option.textContent = product.name;
+                    select.appendChild(option);
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops!',
+                    text: response.message || 'Failed to load products.',
+                });
+            }
+        })
+        .catch(err => {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Failed to load products. Please check your connection or server.',
             });
-    }
+            console.error('Failed to load products:', err);
+        });
+        
+}
+    
 
     // Validate selection, fetch journal entries, render results
     function searchJournal() {
@@ -36,8 +51,13 @@
         const dateTo   = document.getElementById('dateTo').value;
 
         if (!prodId) {
-            alert('Please select a product first.');
-            return;
+            Swal.fire({
+            icon: 'warning',
+            title: 'Oops!',
+            text: 'Please select a product first.',
+            confirmButtonColor: '#2a5d9f'
+        });
+        return;
         }
 
         showStatus('Loading...');
@@ -74,6 +94,13 @@
             });
     }
 
+    function capitalizeWords(str) {
+        return str
+            .split(' ')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+            .join(' ');
+    }
+
 // Render journal entries into the table
     function renderTable(data) {
         const tbody = document.getElementById('journalBody');
@@ -93,7 +120,6 @@
             tr.appendChild(tdProd);
 
             // Incoming qty
-          // Incoming qty
             const tdIncoming = document.createElement('td');
             tdIncoming.textContent = parseInt(entry.incoming_quantity) || 0;
             tr.appendChild(tdIncoming);
@@ -111,7 +137,7 @@
             tdNotes.appendChild(badge);
             tr.appendChild(tdNotes);
 
-            // Total quantity snapshot
+            // Total quantity 
             const tdTotalQty = document.createElement('td');
             tdTotalQty.textContent = entry.total_qty;
             tr.appendChild(tdTotalQty);
@@ -123,7 +149,7 @@
 
             // Created by
             const tdBy = document.createElement('td');
-            tdBy.textContent = entry.account_name || '—';
+            tdBy.textContent = entry.account_name ? capitalizeWords(entry.account_name) : '—';
             tr.appendChild(tdBy);
 
             tbody.appendChild(tr);
@@ -195,13 +221,28 @@
 
     // Trigger browser print dialog
     function printPage() {
+        const tbody = document.getElementById('journalBody');
+            if (!tbody || tbody.children.length === 0 || (tbody.children.length === 1 && tbody.children[0].classList.contains('status-row'))) {
+            Swal.fire({
+                icon: 'info',
+                title: 'Nothing to print',
+                text: 'Please search for a product first.',
+                confirmButtonColor: '#2a5d9f'
+            });
+            return; // stop printing
+        }
         window.print();
     }
 
     // Export journal data as CSV download
     function exportCSV() {
         if (!currentData || currentData.length === 0) {
-            alert('Please search for a product first.');
+            Swal.fire({
+                icon: 'info',
+                title: 'No data',
+                text: 'Please search for a product first.',
+                confirmButtonColor: '#2a5d9f'
+            });
             return;
         }
 
@@ -265,8 +306,14 @@ function autoLoadJournal() {
                 currentData = response.data;
 
                 if (currentData.length === 0) {
-                    showStatus('No records found for this product.');
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'No records',
+                        text: 'No records found for this product.',
+                        confirmButtonColor: '#2a5d9f'
+                    });
                     hideSummaryCards();
+                    return;
                 } else {
                     renderTable(currentData);
                     renderSummary(currentData);

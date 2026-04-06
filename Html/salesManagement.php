@@ -1,13 +1,13 @@
 <?php
-include("../Api/config.php");
-requireLogin();
+    include("../Api/config.php");
+    requireLogin();
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EduTrack POS</title>
+    <title>EduTrack</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../Css/systemNav.css" />
     <link rel="stylesheet" href="../Css/salesManagement.css">
@@ -15,6 +15,7 @@ requireLogin();
 <body>
     <div class="systemNav-container">
         <?php include("systemNav.php"); ?>
+        <div class="main-content">
 
         <header class="topbar">
             <button class="hamburger" id="menuBtn">
@@ -23,42 +24,42 @@ requireLogin();
         </header>
 
         <div class="pos-wrapper">
-                <div class="pos-products">
-                    <h2>Available Products</h2>
-                    <div class="search-bar">
-                        <input type="text" id="productSearch" placeholder="Search products..." onkeyup="filterProducts()">
-                    </div>
-                    <div id="productGrid" class="product-grid"></div>
+            <div class="pos-products">
+                <h2>Available Products</h2>
+                <div class="search-bar">
+                    <input type="text" id="productSearch" placeholder="Search products..." onkeyup="filterProducts()">
                 </div>
+                <div id="productGrid" class="product-grid"></div>
+            </div>
 
-                <div class="pos-cart">
-                    <h2>Current Transaction</h2>
-                    <div class="cart-table-container">
-                        <table class="cart-table">
-                            <thead>
-                                <tr>
-                                    <th>Item</th>
-                                    <th style="width: 60px;">Qty</th>
-                                    <th>Subtotal</th>
-                                    <th></th>
-                                </tr>
-                            </thead>
-                            <tbody id="cartBody"></tbody>
-                        </table>
+            <div class="pos-cart">
+                <h2>Current Transaction</h2>
+                <div class="cart-table-container">
+                    <table class="cart-table">
+                        <thead>
+                            <tr>
+                                <th>Item</th>
+                                <th style="width: 60px;">Qty</th>
+                                <th>Subtotal</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="cartBody"></tbody>
+                    </table>
+                </div>
+                <div class="checkout-panel">
+                    <div class="summary-row">
+                        <span>Total Due:</span>
+                        <span id="cartTotal" class="total-amt" data-raw-total="0">₱0.00</span>
                     </div>
-                    <div class="checkout-panel">
-                        <div class="summary-row">
-                            <span>Total Due:</span>
-                            <span id="cartTotal" class="total-amt" data-raw-total="0">₱0.00</span>
-                        </div>
-                        <div class="payment-row">
-                            <label for="amountPaid">Amount Paid:</label>
-                            <input type="number" id="amountPaid" placeholder="Enter Cash" min="0" step="0.01">
-                        </div>
-                        <button class="checkout-btn" onclick="processCheckout()">Complete Sale</button>
+                    <div class="payment-row">
+                        <label for="amountPaid">Amount Paid:</label>
+                        <input type="number" id="amountPaid" placeholder="Enter Cash" min="0" step="0.01">
                     </div>
+                    <button class="checkout-btn" onclick="processCheckout()">Complete Sale</button>
                 </div>
             </div>
+        </div>
     </div>
 
     <!-- for receipt (show after a successfull transaction)-->
@@ -89,8 +90,9 @@ requireLogin();
                 <button class="checkout-btn" onclick="exportReceiptCSV()" style="background: #17a2b8;">📊 Save as CSV</button>
             </div>
         </div>
+        </div>
     </div>
-
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="../Script/systemNav.js"></script>

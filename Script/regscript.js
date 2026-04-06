@@ -20,10 +20,10 @@ const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
 // STORE FUNCTION
 function store() {
   let payload = {
-    firstName: firstName.val(),
-    lastName: lastName.val(),
-    regemail: regemail.val(),
-    regpassword: regpassword.val(),
+    firstName: firstName.val().trim(),
+    lastName: lastName.val().trim(),
+    regemail: regemail.val().trim(),
+    regpassword: regpassword.val().trim(),
   };
 
   $.ajax({
@@ -35,14 +35,29 @@ function store() {
       payload: JSON.stringify(payload),
     },
     success: function (response) {
-      alert(response.message);
+      Swal.fire({
+        icon: response.status === "success" ? "success" : "error",
+        title: response.status === "success" ? "Success!" : "Error!",
+        text: response.message,
+        confirmButtonColor: "#3085d6",
+      }).then(() => {
 
       if (response.status === "success") {
+        registerform[0].reset();
         window.location.href = "/BSIT-2E-G1-Group1-EduTrack/index.php";
-      }
+      }else {
+        registerBtn.prop("disabled", false).text("Register");
+       }
+      });
     },
     error: function (error) {
-      alert("Something went wrong");
+      Swal.fire({
+        icon: "error",
+        title: "Oops...",
+        text: "Something went wrong!",
+        confirmButtonColor: "#d33",
+      });
+      registerBtn.prop("disabled", false).text("Register");
     },
   });
 }
@@ -171,12 +186,6 @@ function validateInputs() {
   );
 }
 
-// EVENTS
-firstName.on("blur", validateInputs);
-lastName.on("blur", validateInputs);
-regemail.on("blur", validateInputs);
-regpassword.on("blur", validateInputs);
-confirmPassword.on("blur", validateInputs);
 
 function checkForm() {
   if (validateInputs()) {

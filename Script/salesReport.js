@@ -1,10 +1,3 @@
-/**
- * EduTrack — Sales Report JS
- * File: Script/salesReport.js
- *
- * Fetches: ../Api/salesReport.php
- * Query:   SELECT * FROM product_journal WHERE status = 'sales'
- */
 
 'use strict';
 
@@ -157,7 +150,7 @@ function renderHistory(history) {
       </tr>`;
   });
 
-  // Overall Total Money row (matches whiteboard: TotalPrice / TotalMoney)
+  // Overall Total Money row 
   foot.innerHTML = `
     <tr class="total-row">
       <td colspan="5"><b>Overall Total Amount (Sales)</b></td>

@@ -167,6 +167,14 @@ function store() {
 
   let action = (rowIndex === null) ? "store" : "update";
 
+  Swal.fire({
+    title: 'Processing...',
+    allowOutsideClick: false,
+    didOpen: () => {
+      Swal.showLoading();
+    }
+  });
+
   $.ajax({
     url: API, 
     type: 'POST',
@@ -176,14 +184,24 @@ function store() {
     },
     dataType: 'json',
     success: function(response) {
-      alert(response.message);
+      Swal.fire({
+        icon: 'success',
+        title: 'Success',
+        text: response.message,
+        confirmButtonColor: '#2a5d9f'
+      });
+
       closeModal();
       lucide.createIcons();
        table.ajax.reload();
     },
     
 error: function(err) {
-  alert(err.message);   
+  Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Something went wrong!'
+      });   
 }
   });
 }
@@ -193,6 +211,8 @@ function update(btn) {
   let row = $(btn).closest('tr');
   rowIndex = table.row(row);
   let data = table.row(row).data();
+  let incomingVal = data[5] || 0;
+  
 
   openModal();
 
@@ -203,38 +223,67 @@ function update(btn) {
   $("#size").val(data[2]).prop("disabled", false);
   $("#dept").val(data[3]).prop("disabled", false);
   $("#price").val(data[6]).prop("disabled", false);
-  $("#incoming").val(data[5]).prop("disabled", false);
+  $("#incoming").val(incomingVal).prop("disabled", false);
 
-
+  $("#incoming").off("focus").on("focus", function() {
+    if ($(this).val() === "0") {
+      $(this).val("");
+    }
+  });
 }
 
 // ================= RECEIVE STOCK =================
 function receiveStock(btn) {
   let row = $(btn).closest('tr');
   let data = table.row(row).data();
-
   let code = data[0];
+  let incoming_qty = parseInt(data[5]) || 0; 
 
-  if (confirm("Receive this stock?")) {
-    $.ajax({
-      url: API,
-      type: "POST",
-      data: {
-        action: "receive",
-        code: code
-      },
-      dataType: "json",
-      success: function(res) {
-        alert(res.message);
-
-        table.ajax.reload();
-      },
-      error: function(err) {
-        console.log(err.responseText);
-        alert("Error receiving stock");
-      }
+  if (incoming_qty <= 0) {
+    Swal.fire({
+      icon: 'info',
+      title: 'No incoming stock',
+      text: 'There is no incoming stock to receive for this product.'
     });
+    return;
   }
+  Swal.fire({
+    title: 'Receive stock?',
+    text: "This will add incoming stock.",
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonColor: '#2a5d9f',
+    cancelButtonColor: '#d33',
+    confirmButtonText: 'Yes, receive it'
+    }).then((result) => {
+      if (result.isConfirmed) {
+      $.ajax({
+        url: API,
+        type: "POST",
+        data: {
+          action: "receive",
+          code: code
+        },
+        dataType: "json",
+        success: function(res) {
+            Swal.fire({
+              icon: 'success',
+              title: 'Success',
+              text: res.message
+            });
+
+          table.ajax.reload();
+        },
+        error: function(err) {
+          Swal.fire({
+              icon: 'error',
+              title: 'Error',
+              text: 'Error receiving stock'
+            });
+        }
+      });
+    }
+    });
 }
 // ================= DELETE =================
 function deleteRow(btn) {
@@ -243,7 +292,16 @@ function deleteRow(btn) {
 
   let code = data[0];
 
-  if (confirm("Delete this product?")) {
+  Swal.fire({
+    title: 'Are you sure?',
+    text: "Delete this product?",
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#d33',
+    cancelButtonColor: '#3085d6',
+    confirmButtonText: 'Yes, delete it!'
+  }).then((result) => {
+    if (result.isConfirmed) {
     $.ajax({
       url: API,
       type: "POST",
@@ -253,16 +311,25 @@ function deleteRow(btn) {
       },
       dataType: "json",
       success: function(res) {
-        alert(res.message);
+          Swal.fire({
+            icon: 'success',
+            title: 'Deleted!',
+            text: res.message
+          });
 
         table.ajax.reload();
       },
-      error: function(err) {
-        console.log(err.responseText);
-        alert("Error deleting product");
-      }
-    });
-  }
+      error: function() {
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Error deleting product'
+           });
+        }
+      });
+
+    }
+  });
 }
 
 function clearForm() {

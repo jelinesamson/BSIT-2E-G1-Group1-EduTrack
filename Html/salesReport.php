@@ -1,13 +1,18 @@
 <?php
-include("../Api/config.php");
-requireLogin();
+  include("../Api/config.php");
+  requireLogin();
+  
+  if ($_SESSION['role'] === 'cashier') {
+    header("Location: salesManagement.php");
+    exit;
+  }
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>EduTrack — Sales Report</title>
+  <title>EduTrack</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="../Css/systemNav.css"/>
   <link rel="stylesheet" href="../Css/salesReport.css"/>
@@ -18,7 +23,7 @@ requireLogin();
   <?php include('systemNav.php'); ?>
 
   <main class="main">
-
+    <div class="main-content">
     <!-- Top bar -->
     <header class="topbar">
       <button class="hamburger" id="menuBtn"><i data-lucide="menu"></i></button>
@@ -125,7 +130,7 @@ requireLogin();
 
   </main>
 </div>
-
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://unpkg.com/lucide@latest"></script>
 <script src="../Script/systemNav.js"></script>
 <script src="../Script/salesReport.js"></script>

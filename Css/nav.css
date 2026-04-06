@@ -27,7 +27,7 @@
 }
 
 .glass-modal {
-  background: rgba(197, 197, 198, 0.85); /* light glass */
+  background: rgba(197, 197, 198, 0.85);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
   border-radius: 14px;
@@ -129,13 +129,13 @@ input[type="password"]::-webkit-credentials-auto-fill-button {
 }
 
 .input-wrapper input {
-  padding-right: 40px; /* space for the eye icon */
+  padding-right: 40px; 
 }
 
 .input-wrapper .toggleEye {
   position: absolute;
   top: 70%;
-  right: 10px; /* distance from the right edge */
+  right: 10px;
   transform: translateY(-50%);
   cursor: pointer;
   user-select: none;
