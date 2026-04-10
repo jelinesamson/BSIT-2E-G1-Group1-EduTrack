@@ -65,7 +65,7 @@
                 </div>
 
             </div>
-
+            <div id="alertsContainer" class="alerts-box"></div>
         </section>
     </main>
 

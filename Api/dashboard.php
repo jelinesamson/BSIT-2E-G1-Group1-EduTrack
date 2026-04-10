@@ -44,8 +44,36 @@ if (!$productsRes) {
 }
 $productsData = mysqli_fetch_assoc($productsRes);
 
-// Low stock threshold
+// ── Stock Alerts ──
 $lowStockThreshold = 10;
+// ── Low stock products
+$lowStockListQuery = "
+    SELECT product_code, product_type, quantity 
+    FROM products 
+    WHERE quantity <= $lowStockThreshold 
+    AND quantity > 0
+    AND is_deleted = 0
+";
+$lowStockListRes = mysqli_query($conn, $lowStockListQuery);
+
+$lowStockList = [];
+while ($row = mysqli_fetch_assoc($lowStockListRes)) {
+    $lowStockList[] = $row;
+}
+
+// ── Out of stock products
+$outStockListQuery = "
+    SELECT product_code, product_type, quantity 
+    FROM products 
+    WHERE quantity = 0
+    AND is_deleted = 0
+";
+$outStockListRes = mysqli_query($conn, $outStockListQuery);
+
+$outStockList = [];
+while ($row = mysqli_fetch_assoc($outStockListRes)) {
+    $outStockList[] = $row;
+}
 
 // Always return numbers
 echo json_encode([
@@ -53,6 +81,9 @@ echo json_encode([
     'transactions' => intval($salesData['transactions_today'] ?? 0),
     'total_solds' => intval($soldsData['total_solds_today'] ?? 0),
     'total_products' => intval($productsData['total_products'] ?? 0),
-    'low_stock_threshold' => $lowStockThreshold
+
+    // 👇 gamitin na natin yung LIST
+    'low_stock_list' => $lowStockList,
+    'out_stock_list' => $outStockList
 ]);
 ?>
