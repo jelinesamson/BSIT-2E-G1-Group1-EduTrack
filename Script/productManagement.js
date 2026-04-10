@@ -137,10 +137,14 @@ function store() {
   let size = $("#size").val();
   let department = $("#dept").val();
   let incoming_qty = parseInt($("#incoming").val()) || 0;
-  let price = $("#price").val().trim();
+  let price = parseFloat($("#price").val()) || 0
 
   let type = (product_type === "Other") ? other : product_type;
 
+  if (product_type === "Other" && !other) {
+    Swal.fire("Error", "Please specify product type", "error");
+    return;
+  }
   if (type !== "Uniform" && type !== "Merchandise") {
     size = "None";
   }

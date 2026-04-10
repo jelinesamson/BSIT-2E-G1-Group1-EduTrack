@@ -2,10 +2,9 @@
     require_once "config.php";
     require_once "inventoryManagement.php";
     if (isset($_POST['action'])) {
-    if ($_POST['action'] == "store") {
+   if ($_POST['action'] == "store") {
 
     $payload = json_decode($_POST['payload']);
-
     $account_id = $_SESSION['account_id'] ?? null;
 
     if (!$account_id) {
@@ -16,13 +15,9 @@
         exit;
     }
 
-    $statement = $conn->prepare("
-        INSERT INTO products 
-        (product_code, product_type, size, department, quantity, incoming_qty, price, status) 
-        VALUES (?,?,?,?,?,?,?,?)
-    ");
+    $stmt = $conn->prepare("CALL add_product(?,?,?,?,?,?,?,?,?)");
 
-    $statement->bind_param("ssssiids",
+    $stmt->bind_param("ssssiidsi",
         $payload->code,
         $payload->product_type,
         $payload->size,
@@ -30,26 +25,33 @@
         $payload->quantity,
         $payload->incoming_qty,
         $payload->price,
-        $payload->status
+        $payload->status,
+        $account_id
     );
 
-    $quantity = $payload->quantity;
+    if ($stmt->execute()) {
 
-    if ($statement->execute()) {
-
-        $product_id = $conn->insert_id;
-
-        logJournal($conn, $product_id, $payload->incoming_qty, 0, "Add", $quantity, $account_id);
+        // IMPORTANT for stored procedure
+        while ($conn->more_results() && $conn->next_result()) {}
 
         echo json_encode([
             "status" => "success",
             "message" => "Product added Successfully"
         ]);
+
+    } else {
+        echo json_encode([
+            "status" => "error",
+            "message" => $stmt->error
+        ]);
     }
+
+    $stmt->close();
+    exit;
 }
 
       if ($_POST['action'] == "get") {
-    $result = $conn->query("SELECT * FROM products WHERE is_deleted = 0");
+    $result = $conn->query("SELECT * FROM v_products");
 
     $data = [];
 
@@ -72,21 +74,22 @@
     echo json_encode([
         "data" => $data
     ]);
+    exit;
 }
 
 if ($_POST['action'] == "update") {
+
     $payload = json_decode($_POST['payload']);
     $account_id = $_SESSION['account_id'] ?? null;
 
-    $status = ($payload->incoming_qty > 0) ? "On the Way" : "Successfully";
-
-    //  First, get the product_id from product_code
+    // GET product info (for logging only)
     $stmtId = $conn->prepare("SELECT product_id, quantity FROM products WHERE product_code = ?");
     $stmtId->bind_param("s", $payload->code);
     $stmtId->execute();
     $result = $stmtId->get_result()->fetch_assoc();
+
     $product_id = $result['product_id'] ?? null;
-    $quantity =  $result['quantity'] ?? null;
+    $quantity = $result['quantity'] ?? 0;
 
     if (!$product_id) {
         echo json_encode([
@@ -96,116 +99,128 @@ if ($_POST['action'] == "update") {
         exit;
     }
 
-    //  Update product using product_id
-    $stmt = $conn->prepare("
-        UPDATE products 
-        SET product_type = ?, 
-            size = ?, 
-            department = ?, 
-            incoming_qty = ?, 
-            price = ?, 
-            status = ?
-        WHERE product_id = ?
-    ");
+    // CALL PROCEDURE
+    $stmt = $conn->prepare("CALL update_product(?,?,?,?,?,?,?)");
 
-    $stmt->bind_param("sssissi",
+    $stmt->bind_param("sssssii",
+        $payload->code,
         $payload->product_type,
         $payload->size,
         $payload->department,
         $payload->incoming_qty,
         $payload->price,
-        $status,
-        $product_id
+        $account_id
     );
 
     if ($stmt->execute()) {
-        //  Log journal with product_id
-        logJournal($conn, $product_id, $payload->incoming_qty, 0, "Edit", $quantity, $account_id);
+
+        // IMPORTANT for stored procedures
+        while ($conn->more_results() && $conn->next_result()) {}
+
+        // ONLY ONE LOG HERE (PHP SIDE)
+        logJournal(
+            $conn,
+            $product_id,
+            $payload->incoming_qty,
+            0,
+            "Edit",
+            $quantity,
+            $account_id
+        );
 
         echo json_encode([
             "status" => "success",
             "message" => "Updated successfully"
         ]);
+
     } else {
         echo json_encode([
             "status" => "error",
-            "message" => "Update failed"
+            "message" => $stmt->error
         ]);
     }
+
+    $stmt->close();
+    exit;
 }
 	
-	if ($_POST['action'] == "drop") {
+if ($_POST['action'] == "drop") {
+
     $code = $_POST['code'];
     $account_id = $_SESSION['account_id'] ?? null;
-    // get product_id
-    $stmtId = $conn->prepare("SELECT product_id, quantity FROM products WHERE product_code = ?");
-    $stmtId->bind_param("s", $code);
-    $stmtId->execute();
-    $result = $stmtId->get_result()->fetch_assoc();
-    $product_id = $result['product_id'] ?? null;
-    $quantity = $result['quantity'] ?? null;
 
-    if (!$product_id) {
-        echo json_encode(["status" => "error", "message" => "Product not found"]);
+    if (!$account_id) {
+        echo json_encode([
+            "status" => "error",
+            "message" => "User not logged in"
+        ]);
         exit;
     }
 
-    //  SOFT DELETE (not real delete)
-    $stmt = $conn->prepare("UPDATE products SET is_deleted = 1 WHERE product_id = ?");
-    $stmt->bind_param("i", $product_id);
+    $stmt = $conn->prepare("CALL delete_product(?,?)");
+
+    $stmt->bind_param("si",
+        $code,
+        $account_id
+    );
 
     if ($stmt->execute()) {
 
-        // log journal
-        logJournal($conn, $product_id, 0, 0, "Delete", $quantity, $account_id);
+        // IMPORTANT (fix JSON / DataTables error)
+        while ($conn->more_results() && $conn->next_result()) {}
 
         echo json_encode([
             "status" => "success",
             "message" => "Product archived successfully"
         ]);
+
+    } else {
+        echo json_encode([
+            "status" => "error",
+            "message" => $stmt->error
+        ]);
     }
+
+    $stmt->close();
 }
 if ($_POST['action'] == "receive") {
+
     $code = $_POST['code'];
     $account_id = $_SESSION['account_id'] ?? null;
 
-    //  Get product_id, incoming_qty, quantity
-    $stmt = $conn->prepare("SELECT product_id, incoming_qty, quantity FROM products WHERE product_code = ?");
-    $stmt->bind_param("s", $code);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $row = $result->fetch_assoc();
-
-    $product_id = $row['product_id'];
-    $incoming = (int)$row['incoming_qty'];
-    $qty = (int)$row['quantity'];
-
-    if ($incoming <= 0) {
+    if (!$account_id) {
         echo json_encode([
             "status" => "error",
-            "message" => "No incoming stock"
+            "message" => "User not logged in"
         ]);
         exit;
     }
 
-    //  Move incoming → quantity
-    $newQty = $qty + $incoming;
+    $stmt = $conn->prepare("CALL receive_product(?,?)");
 
-    $update = $conn->prepare("
-        UPDATE products 
-        SET quantity = ?, incoming_qty = 0, status = 'Successfully'
-        WHERE product_id = ?
-    ");
-    $update->bind_param("ii", $newQty, $product_id);
-    $update->execute();
+    $stmt->bind_param("si",
+        $code,
+        $account_id
+    );
 
-    //  Log the actual received stock
-    logJournal($conn, $product_id, 0, 0, "Receive", $newQty, $account_id);
+    if ($stmt->execute()) {
 
-    echo json_encode([
-        "status" => "success",
-        "message" => "Stock moved to current quantity"
-    ]);
+        // 🔥 FIX DataTables / JSON issue
+        while ($conn->more_results() && $conn->next_result()) {}
+
+        echo json_encode([
+            "status" => "success",
+            "message" => "Stock received successfully"
+        ]);
+
+    } else {
+        echo json_encode([
+            "status" => "error",
+            "message" => $stmt->error
+        ]);
+    }
+
+    $stmt->close();
 }
-}
+    }
 ?>

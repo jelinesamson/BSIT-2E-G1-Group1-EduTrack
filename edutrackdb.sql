@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Apr 06, 2026 at 12:58 PM
+-- Generation Time: Apr 10, 2026 at 11:38 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -20,6 +20,128 @@ SET time_zone = "+00:00";
 --
 -- Database: `edutrackdb`
 --
+
+DELIMITER $$
+--
+-- Procedures
+--
+CREATE DEFINER=`root`@`localhost` PROCEDURE `add_product` (IN `p_code` VARCHAR(50), IN `p_product_type` VARCHAR(50), IN `p_size` VARCHAR(20), IN `p_department` VARCHAR(50), IN `p_quantity` INT, IN `p_incoming_qty` INT, IN `p_price` DOUBLE, IN `p_status` VARCHAR(20), IN `p_account_id` INT)   BEGIN
+    DECLARE v_product_id INT;
+
+    -- Insert product
+    INSERT INTO products 
+    (product_code, product_type, size, department, quantity, incoming_qty, price, status) 
+    VALUES 
+    (p_code, p_product_type, p_size, p_department, p_quantity, p_incoming_qty, p_price, p_status);
+
+    -- Get last inserted ID
+    SET v_product_id = LAST_INSERT_ID();
+
+    -- Call logJournal procedure (dapat meron ka nito)
+    CALL logJournal(
+        v_product_id,
+        p_incoming_qty,
+        0,
+        'Add',
+        p_quantity,
+        p_account_id
+    );
+
+END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `delete_product` (IN `p_code` VARCHAR(50), IN `p_account_id` INT)   BEGIN
+    DECLARE v_product_id INT;
+    DECLARE v_quantity INT;
+
+    -- get product
+    SELECT product_id, quantity 
+    INTO v_product_id, v_quantity
+    FROM products
+    WHERE product_code = p_code;
+
+    IF v_product_id IS NOT NULL THEN
+
+        -- soft delete
+        UPDATE products 
+        SET is_deleted = 1
+        WHERE product_id = v_product_id;
+
+        -- log
+        CALL logJournal(v_product_id, 0, 0, 'Delete', v_quantity, p_account_id);
+
+    END IF;
+
+END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `logJournal` (IN `p_product_id` INT, IN `p_incoming` INT, IN `p_sales` INT, IN `p_notes` VARCHAR(255), IN `p_qty` INT, IN `p_account_id` INT)   BEGIN
+
+    INSERT INTO product_journal
+    (product_id, incoming_quantity, sales, notes, journal_qty, account_id, date_time)
+    VALUES
+    (p_product_id, p_incoming, p_sales, p_notes, p_qty, p_account_id, NOW());
+
+END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `receive_product` (IN `p_code` VARCHAR(50), IN `p_account_id` INT)   BEGIN
+    DECLARE v_product_id INT;
+    DECLARE v_qty INT;
+    DECLARE v_incoming INT;
+    DECLARE v_new_qty INT;
+
+    -- get product
+    SELECT product_id, quantity, incoming_qty
+    INTO v_product_id, v_qty, v_incoming
+    FROM products
+    WHERE product_code = p_code;
+
+    IF v_product_id IS NOT NULL THEN
+
+        IF v_incoming > 0 THEN
+
+            SET v_new_qty = v_qty + v_incoming;
+
+            UPDATE products
+            SET quantity = v_new_qty,
+                incoming_qty = 0,
+                status = 'Successfully'
+            WHERE product_id = v_product_id;
+
+            CALL logJournal(v_product_id, 0, 0, 'Receive', v_new_qty, p_account_id);
+
+        END IF;
+
+    END IF;
+
+END$$
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `update_product` (IN `p_code` VARCHAR(50), IN `p_product_type` VARCHAR(50), IN `p_size` VARCHAR(20), IN `p_department` VARCHAR(50), IN `p_incoming_qty` INT, IN `p_price` DOUBLE, IN `p_account_id` INT)   BEGIN
+    DECLARE v_product_id INT;
+    DECLARE v_quantity INT;
+    DECLARE v_status VARCHAR(20);
+
+    SELECT product_id, quantity 
+    INTO v_product_id, v_quantity
+    FROM products
+    WHERE product_code = p_code;
+
+    IF v_product_id IS NOT NULL THEN
+
+        SET v_status = IF(p_incoming_qty > 0, 'On the Way', 'Successfully');
+
+        UPDATE products
+        SET product_type = p_product_type,
+            size = p_size,
+            department = p_department,
+            incoming_qty = p_incoming_qty,
+            price = p_price,
+            status = v_status
+        WHERE product_id = v_product_id;
+
+    END IF;
+
+END$$
+
+DELIMITER ;
 
 -- --------------------------------------------------------
 
@@ -71,10 +193,10 @@ CREATE TABLE `products` (
 --
 
 INSERT INTO `products` (`product_id`, `product_code`, `product_type`, `size`, `department`, `quantity`, `incoming_qty`, `price`, `status`, `is_deleted`) VALUES
-(20, 'UNI001', 'Uniform', 'Small', 'CICT', 9, 5, 450, 'On the Way', 0),
-(21, 'B001', 'Book', 'None', 'CBEA', 20, 0, 350, 'Successfully', 0),
+(20, 'UNI001', 'Uniform', 'Small', 'CICT', 12, 0, 450, 'Successfully', 0),
+(21, 'B001', 'Book', 'None', 'CBEA', 17, 0, 350, 'Successfully', 0),
 (22, 'qq', 'UIKASJH', 'None', 'CICT', 0, 10, 150, 'On the Way', 1),
-(23, 'L001', 'ID Lace', 'None', 'CICT', 0, 50, 120, 'On the Way', 0);
+(31, 'L001', 'ID Lace', 'None', 'COE', 0, 10, 250, 'On the Way', 0);
 
 -- --------------------------------------------------------
 
@@ -130,7 +252,17 @@ INSERT INTO `product_journal` (`journal_id`, `product_id`, `incoming_quantity`, 
 (82, 20, 0, 0, 'Edit', 10, 3, '2026-04-06 03:08:18'),
 (83, 20, 5, 0, 'Edit', 10, 3, '2026-04-06 03:08:56'),
 (84, 20, 5, 1, 'Sale TXN-70595B3', 9, 12, '2026-04-06 07:40:32'),
-(85, 23, 50, 0, 'Add', 0, 3, '2026-04-06 08:12:10');
+(103, 31, 10, 0, 'Add', 0, 3, '2026-04-10 02:23:57'),
+(104, 31, 0, 0, 'Receive', 10, 3, '2026-04-10 02:24:59'),
+(105, 31, 10, 0, 'Edit', 10, 3, '2026-04-10 02:25:22'),
+(106, 31, 10, 1, 'Sale TXN-28B49B8', 9, 3, '2026-04-10 02:27:52'),
+(107, 31, 10, 1, 'Sale TXN-5C00315', 8, 12, '2026-04-10 02:37:16'),
+(108, 21, 0, 1, 'Sale TXN-5C00315', 19, 12, '2026-04-10 02:37:16'),
+(109, 20, 5, 1, 'Sale TXN-5C00315', 8, 12, '2026-04-10 02:37:16'),
+(110, 21, 0, 2, 'Sale TXN-AE29FB1', 17, 12, '2026-04-10 06:03:26'),
+(111, 20, 0, 0, 'Receive', 13, 3, '2026-04-10 07:53:26'),
+(114, 20, 0, 1, 'Sale TXN-44E92FC', 12, 12, '2026-04-10 08:01:08'),
+(115, 31, 10, 8, 'Sale TXN-5358D59', 0, 12, '2026-04-10 08:01:23');
 
 -- --------------------------------------------------------
 
@@ -156,13 +288,18 @@ CREATE TABLE `transactions` (
 INSERT INTO `transactions` (`transaction_id`, `total`, `paid`, `change_amount`, `vat`, `status`, `account_id`, `date_time`) VALUES
 ('TXN-073D971', 450.00, 450.00, 0.00, 54.00, 'completed', 3, '2026-04-02 15:00:23'),
 ('TXN-1AC8895', 800.00, 800.00, 0.00, 96.00, 'completed', 3, '2026-04-02 15:00:42'),
+('TXN-28B49B8', 250.00, 250.00, 0.00, 30.00, 'completed', 3, '2026-04-10 10:27:52'),
 ('TXN-3026E5D', 450.00, 450.00, 0.00, 54.00, 'completed', 4, '2026-04-05 15:58:40'),
 ('TXN-3936A5D', 450.00, 500.00, 50.00, 54.00, 'completed', 3, '2026-04-02 14:35:37'),
+('TXN-44E92FC', 450.00, 450.00, 0.00, 54.00, 'completed', 12, '2026-04-10 16:01:08'),
 ('TXN-4E9FC15', 700.00, 1000.00, 300.00, 84.00, 'completed', 3, '2026-04-02 14:35:58'),
+('TXN-5358D59', 2000.00, 2000.00, 0.00, 240.00, 'completed', 12, '2026-04-10 16:01:23'),
+('TXN-5C00315', 1050.00, 1500.00, 450.00, 126.00, 'completed', 12, '2026-04-10 10:37:16'),
 ('TXN-70595B3', 450.00, 500.00, 50.00, 54.00, 'completed', 12, '2026-04-06 15:40:32'),
 ('TXN-8A64232', 350.00, 350.00, 0.00, 42.00, 'completed', 3, '2026-04-02 15:02:34'),
 ('TXN-90072B6', 450.00, 450.00, 0.00, 54.00, 'completed', 3, '2026-04-05 13:48:00'),
 ('TXN-92756E0', 800.00, 900.00, 100.00, 96.00, 'completed', 3, '2026-04-02 15:02:42'),
+('TXN-AE29FB1', 700.00, 700.11, 0.11, 84.00, 'completed', 12, '2026-04-10 14:03:26'),
 ('TXN-F528D7D', 800.00, 1000.00, 200.00, 96.00, 'completed', 3, '2026-04-05 13:45:25');
 
 -- --------------------------------------------------------
@@ -199,7 +336,41 @@ INSERT INTO `transaction_items` (`item_id`, `transaction_id`, `product_id`, `pro
 (20, 'TXN-F528D7D', 21, 'B001', 'Book', 1, 350.00, 350.00),
 (21, 'TXN-90072B6', 20, 'UNI001', 'Uniform', 1, 450.00, 450.00),
 (22, 'TXN-3026E5D', 20, 'UNI001', 'Uniform', 1, 450.00, 450.00),
-(23, 'TXN-70595B3', 20, 'UNI001', 'Uniform', 1, 450.00, 450.00);
+(23, 'TXN-70595B3', 20, 'UNI001', 'Uniform', 1, 450.00, 450.00),
+(24, 'TXN-28B49B8', 31, 'L001', 'ID Lace', 1, 250.00, 250.00),
+(25, 'TXN-5C00315', 31, 'L001', 'ID Lace', 1, 250.00, 250.00),
+(26, 'TXN-5C00315', 21, 'B001', 'Book', 1, 350.00, 350.00),
+(27, 'TXN-5C00315', 20, 'UNI001', 'Uniform', 1, 450.00, 450.00),
+(28, 'TXN-AE29FB1', 21, 'B001', 'Book', 2, 350.00, 700.00),
+(29, 'TXN-44E92FC', 20, 'UNI001', 'Uniform', 1, 450.00, 450.00),
+(30, 'TXN-5358D59', 31, 'L001', 'ID Lace', 8, 250.00, 2000.00);
+
+-- --------------------------------------------------------
+
+--
+-- Stand-in structure for view `v_products`
+-- (See below for the actual view)
+--
+CREATE TABLE `v_products` (
+`product_id` int(11)
+,`product_code` varchar(50)
+,`product_type` varchar(50)
+,`size` varchar(50)
+,`department` varchar(50)
+,`quantity` int(11)
+,`incoming_qty` int(11)
+,`price` double
+,`status` varchar(50)
+);
+
+-- --------------------------------------------------------
+
+--
+-- Structure for view `v_products`
+--
+DROP TABLE IF EXISTS `v_products`;
+
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `v_products`  AS SELECT `products`.`product_id` AS `product_id`, `products`.`product_code` AS `product_code`, `products`.`product_type` AS `product_type`, `products`.`size` AS `size`, `products`.`department` AS `department`, `products`.`quantity` AS `quantity`, `products`.`incoming_qty` AS `incoming_qty`, `products`.`price` AS `price`, `products`.`status` AS `status` FROM `products` WHERE `products`.`is_deleted` = 0 ;
 
 --
 -- Indexes for dumped tables
@@ -253,19 +424,19 @@ ALTER TABLE `accounts`
 -- AUTO_INCREMENT for table `products`
 --
 ALTER TABLE `products`
-  MODIFY `product_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
+  MODIFY `product_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=34;
 
 --
 -- AUTO_INCREMENT for table `product_journal`
 --
 ALTER TABLE `product_journal`
-  MODIFY `journal_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=86;
+  MODIFY `journal_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=118;
 
 --
 -- AUTO_INCREMENT for table `transaction_items`
 --
 ALTER TABLE `transaction_items`
-  MODIFY `item_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
+  MODIFY `item_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
 
 --
 -- Constraints for dumped tables
