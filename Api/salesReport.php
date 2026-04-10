@@ -26,11 +26,17 @@ LIMIT 100";
 $hRes = mysqli_query($conn, $sqlHistory);
 $history = [];
 $overallTotal = $overallVat = $overallPaid = 0;
+$processedTxns = []; 
+
 while ($r = mysqli_fetch_assoc($hRes)) {
     $history[] = $r;
-    $overallTotal += (float)$r['total_price'];
-    $overallVat   += (float)$r['vat_amount'];
-    $overallPaid  += (float)$r['paid'];
+    $overallTotal += (float)$r['total_price'];  
+    
+    if (!in_array($r['transaction_id'], $processedTxns)) {
+        $overallVat   += (float)$r['vat_amount'];
+        $overallPaid  += (float)$r['paid'];
+        $processedTxns[] = $r['transaction_id'];
+    }
 }
 
 // --- Product Summary (aggregated) ---

@@ -126,25 +126,31 @@ function renderHistory(history) {
   }
 
   let totTotal = 0, totPaid = 0, totChange = 0, totVat = 0;
+  let processedTxns = new Set(); // Prevent duplicating transaction-level money
 
   history.forEach((r, i) => {
     const tp  = parseFloat(r.total_price);
-    const pd  = parseFloat(r.paid);
-    const ch  = parseFloat(r.change);
-    const vat = parseFloat(r.vat_amount);
-    totTotal += tp; totPaid += pd; totChange += ch; totVat += vat;
+    totTotal += tp; 
+
+    // Only add Paid, Change, and VAT once per transaction ID
+    if (!processedTxns.has(r.transaction_id)) {
+        totPaid += parseFloat(r.paid);
+        totChange += parseFloat(r.change);
+        totVat += parseFloat(r.vat_amount);
+        processedTxns.add(r.transaction_id);
+    }
 
     body.innerHTML += `
       <tr>
         <td>${i + 1}</td>
-        <td><b>${r.product}</b></td>
+        <td><b style="color: #0056b3;">${r.transaction_id}</b></td> <td><b>${r.product}</b></td>
         <td><span class="${catCls(r.category)}">${r.category}</span></td>
         <td>${r.qty}</td>
         <td>${peso(r.unit_price)}</td>
         <td><b>${peso(tp)}</b></td>
-        <td>${peso(pd)}</td>
-        <td>${peso(ch)}</td>
-        <td>${peso(vat)}</td>
+        <td>${peso(r.paid)}</td>
+        <td>${peso(r.change)}</td>
+        <td>${peso(r.vat_amount)}</td>
         <td style="white-space:nowrap;font-size:12px">${fmt(r.sold_at)}</td>
         <td class="st-${r.status}">${r.status}</td>
       </tr>`;
@@ -153,7 +159,7 @@ function renderHistory(history) {
   // Overall Total Money row 
   foot.innerHTML = `
     <tr class="total-row">
-      <td colspan="5"><b>Overall Total Amount (Sales)</b></td>
+      <td colspan="6"><b>Overall Total Amount (Sales)</b></td>
       <td><b>${peso(totTotal)}</b></td>
       <td><b>${peso(totPaid)}</b></td>
       <td><b>${peso(totChange)}</b></td>
@@ -221,6 +227,21 @@ async function render(month, type) {
 }
 
 // ── Events ────────────────────────────────────────────────────────────────────
+// Search TXN ID Live Filter
+document.getElementById('searchTxn').addEventListener('input', function () {
+  if (!data) return;
+  const term = this.value.trim().toLowerCase();
+  
+  if (term === '') {
+    renderHistory(data.history); // Reset to full data
+  } else {
+    // Filter rows that contain the typed TXN ID
+    const filtered = data.history.filter(r => 
+      r.transaction_id.toLowerCase().includes(term)
+    );
+    renderHistory(filtered);
+  }
+});
 document.getElementById('selMonth').addEventListener('change', function () {
   render(this.value, document.getElementById('selType').value);
 });

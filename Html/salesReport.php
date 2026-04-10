@@ -36,6 +36,9 @@
       <select id="selType">
         <option value="">All Categories</option>
       </select>
+      
+      <input type="text" id="searchTxn" placeholder="Search TXN ID..." style="padding: 6px 10px; border: 1px solid #ddd; border-radius: 4px; outline: none; flex: 1; max-width: 250px;">
+      
       <button class="btn-export" id="btnCSV">
         <i data-lucide="download" style="width:14px;height:14px;"></i> Export CSV
       </button>
@@ -105,6 +108,7 @@
             <thead>
               <tr>
                 <th>#</th>
+                <th>TXN ID</th>
                 <th>Product</th>
                 <th>Category</th>
                 <th>Qty</th>
